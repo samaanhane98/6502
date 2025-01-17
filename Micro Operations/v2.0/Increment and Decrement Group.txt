@@ -1,0 +1,89 @@
+Brief: 
+    - Addressing Modes: Absolute, Zero Page, Absolute_X, Zero Page_X and Implied;
+    - Lenght: 2 to 3 bytes;
+    - Cycles: 3 to 7;
+    
+States shared between different addressing modes:
+
+        ALL
+        ----
+            T0: MAR <- PC ;  PC++                           # Fetch
+            T1: MAR <- PC ; IR <- MEM[MAR] ; PC++;          # First Decode step, IR receives opcode 
+            
+Specific States:    
+        
+        INC
+        ----    
+            - Z-PAGE: INC $33 (e6 33)                   # MEM[33h] <- MEM[33h] + 1   
+                T2: MAR <- MEM[MAR];                      
+                T3: BI <- MEM[MAR]; AI <- 0
+                T4: MEM[MAR] <- AI + BI + 1; wrn; wnz
+
+            - Z-PAGE,X: INC $13 (f6 13)                 # MEM[13h+X] <- MEM[13h+X] + 1
+                T2: BI <- MEM[MAR]; AI <- X
+                T3: ABL <- AI + BI;
+                T4: BI <- MEM[ABH/ABL]; AI <- 0
+                T5: MEM[ABH/ABL] <- AI + BI + 1; wrn; wnz
+                
+            - ABS: INC $0001 (ee 01 00)                 # MEM[0001h] <- MEM[0001h] + 1
+                T2: ABL <- MEM[MAR]; MAR <- PC; PC++;
+                T3: ABH <- MEM[MAR]
+                T4: BI <- MEM[ABH/ABL]; AI <- 0
+                T5: MEM[ABH/ABL] <- AI + BI + 1; wrn; wnz
+                
+            - ABS,X: INC $12F0,X (fe F0 12)             # MEM[12F0h+X] <- MEM[12F0h+X] + 1
+                T2: BI <- MEM[MAR]; AI <- X; MAR <- PC; PC++;   # BI <- LOW ADDRESS BYTE
+                T3: ABL <- AI + BI; BI <- MEM[MAR]; AI <- 0;    # BI <- HIGH ADDRESS BYTE
+                T4: ABH <- AI + BI + hc;                        # ABH & ABL <- [12F0h+X]
+                T5: BI <- MEM[ABH/ABL]; AI <- 0
+                T6: MEM[ABH/ABL] <- AI + BI + 1; wrn; wnz
+                            
+        DEC
+        ---- 
+            - Z-PAGE: DEC $33 (c6 33)                   # MEM[33h] <- MEM[33h] - 1
+                T2: MAR <- MEM[MAR];                      
+                T3: BI <- MEM[MAR]; AI <- 0
+                T4: MEM[MAR] <- AI + BI - 1; wrn; wnz
+            
+            - Z-PAGE,X: DEC $13 (d6 13)                 # MEM[13h+X] <- MEM[13h+X] - 1
+                T2: BI <- MEM[MAR]; AI <- X
+                T3: ABL <- AI + BI;
+                T4: BI <- MEM[ABH/ABL]; AI <- 0
+                T5: MEM[ABH/ABL] <- AI + BI - 1; wrn; wnz
+                        
+            - ABS: DEC $0001 (ce 01 00)                 # MEM[0001h] <- MEM[0001h] - 1
+                T2: ABL <- MEM[MAR]; MAR <- PC; PC++;
+                T3: ABH <- MEM[MAR]
+                T4: BI <- MEM[ABH/ABL]; AI <- 0
+                T5: MEM[ABH/ABL] <- AI + BI - 1; wrn; wnz
+            
+            - ABS,X: DEC $12F0,X (de F0 12)             # MEM[12F0h+X] <- MEM[12F0h+X] - 1
+                T2: BI <- MEM[MAR]; AI <- X; MAR <- PC; PC++;   # BI <- LOW ADDRESS BYTE
+                T3: ABL <- AI + BI; BI <- MEM[MAR]; AI <- 0;    # BI <- HIGH ADDRESS BYTE
+                T4: ABH <- AI + BI + hc;                        # ABH & ABL <- [12F0h+X]
+                T5: BI <- MEM[ABH/ABL]; AI <- 0
+                T6: MEM[ABH/ABL] <- AI + BI - 1; wrn; wnz
+            
+        INX
+        ----
+            - IMPLIED: INX (e8)                   # X <- X + 1
+                T1: IR <- MEM[MAR]; BI <- X; AI <- 0; 
+                T2: X <- AI + BI + 1; wrn; wnz
+        
+        INY
+        ----
+            - IMPLIED: INY (c8)                   # Y <- Y + 1
+                T1: IR <- MEM[MAR]; BI <- Y; AI <- 0;
+                T2: Y <- AI + BI + 1; wrn; wnz
+            
+        DEX
+        ----
+            - IMPLIED: DEX (ca)                   # X <- X - 1
+                T1: IR <- MEM[MAR]; BI <- X; AI <- 0;
+                T2: X <- AI + BI - 1; wrn; wnz
+                
+        DEY
+        ----
+            - IMPLIED: DEY (88)                   # Y <- Y - 1
+                T1: IR <- MEM[MAR]; BI <- Y; AI <- 0;
+                T2: Y <- AI + BI - 1; wrn; wnz    
