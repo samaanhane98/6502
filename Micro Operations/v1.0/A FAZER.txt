@@ -1,5 +1,0 @@
-- Conferir flags de carry/overflow nas operacões aritméticas
-- Concluir micro operacões Subroutine and Interrupt Group (RTI)
-
-
---  REVISAR QUANTIDADE DE CICLOS DE CADA INSTRUÇÃO, VER LDA IMM E STA ABS
