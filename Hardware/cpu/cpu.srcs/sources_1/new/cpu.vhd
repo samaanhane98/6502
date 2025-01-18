@@ -38,22 +38,20 @@ ENTITY cpu IS
     rst : IN STD_LOGIC;
     data_in : IN DB;
     data_out : OUT DB;
-    address : OUT AB;
+    address : OUT AD;
     rw_out : OUT RW
   );
 END cpu;
 
 ARCHITECTURE behavioral OF cpu IS
-  SIGNAL n_clk : STD_LOGIC;
   SIGNAL u_operation : MICRO_OPERATION;
 
 BEGIN
-  n_clk <= NOT clk;
   rw_out <= u_operation.wr_mem;
 
   data_path_inst : ENTITY work.data_path
     PORT MAP(
-      n_clk => n_clk,
+      clk => clk,
       rst => rst,
       u_operation => u_operation,
       data_in => data_in,
@@ -63,6 +61,8 @@ BEGIN
 
   control_path_inst : ENTITY work.control_path PORT MAP (
     clk => clk,
-    u_operation => u_operation
+    rst => rst,
+    u_operation => u_operation,
+    instruction => data_in
     );
 END behavioral;

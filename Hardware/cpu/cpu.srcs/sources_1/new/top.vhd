@@ -23,11 +23,6 @@ USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.NUMERIC_STD.ALL;
 USE work.cpu_pkg.ALL;
 
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
-
 ENTITY top IS
   PORT (
     clk : IN STD_LOGIC;
@@ -36,19 +31,18 @@ ENTITY top IS
 END top;
 
 ARCHITECTURE behavioral OF top IS
-  SIGNAL n_clk : STD_LOGIC;
-  SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"69", OTHERS => (OTHERS => '0'));
+  SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"69", 1 => x"01", OTHERS => (OTHERS => '0'));
 
   SIGNAL data_in : DB;
   SIGNAL data_out : DB;
-  SIGNAL address : AB;
+  SIGNAL address : AD;
   SIGNAL rw : RW;
 
 BEGIN
-  n_clk <= NOT clk;
+  -- n_clk <= NOT clk;
 
-  RW_OPERATION : PROCESS (n_clk) BEGIN
-    IF rising_edge(n_clk) THEN
+  RW_OPERATION : PROCESS (clk) BEGIN
+    IF rising_edge(clk) THEN
       CASE (rw) IS
         WHEN READ_ENABLE =>
           data_in <= memory(to_integer(unsigned(address)));

@@ -25,43 +25,35 @@ USE work.cpu_pkg.ALL;
 
 ENTITY data_path IS
   PORT (
-    n_clk : IN STD_LOGIC;
+    clk : IN STD_LOGIC;
     rst : IN STD_LOGIC;
     u_operation : IN MICRO_OPERATION;
     data_in : IN DB;
     data_out : OUT DB;
-    address : OUT AB
+    address : OUT AD
   );
 END data_path;
 
 ARCHITECTURE behavioral OF data_path IS
-  -- Registers
-  SIGNAL rPC : PC := (OTHERS => '0');
+  -- Busses
+  SIGNAL adh : ADH;
+  SIGNAL adl : ADL;
+
+  -- Dedicated Registers
+  SIGNAL rPCL : PCL := (OTHERS => '0');
+  SIGNAL rPCH : PCH := (OTHERS => '0');
   SIGNAL rACC : ACC := (OTHERS => '0');
   SIGNAL rX : RGX := (OTHERS => '0');
   SIGNAL rY : RGY := (OTHERS => '0');
-  SIGNAL rABL : ABL := (OTHERS => '0');
-  SIGNAL rABH : ABH := (OTHERS => '0');
+
   SIGNAL status : STATUS := (OTHERS => '0');
 
-  -- Latches
-  SIGNAL newPC : PC;
-  SIGNAL alu : ALU;
 BEGIN
-  address <= rABH & rABL;
-  rPC <= newPC;
+  -- address <= ABH & ABL;
 
-  ABL_SELECT : WITH u_operation.mux_abl SELECT rABL <=
-  rPC(7 DOWNTO 0) WHEN "00",
-  "00000000" WHEN OTHERS;
+  -- ABL_MUX : rABL <= rPCL WHEN u_operation.mux_abl = "00" ELSE
+  -- (OTHERS => '0');
 
-  ABH_SELECT : WITH u_operation.mux_abh SELECT rABH <=
-  rPC(15 DOWNTO 8) WHEN "00",
-  (OTHERS => '0') WHEN OTHERS;
-
-  NEWPC_SELECT : WITH u_operation.mux_pc SELECT newPC <=
-  rPC WHEN "00",
-  STD_LOGIC_VECTOR(unsigned(rPC) + 1) WHEN "01",
-  (OTHERS => '0') WHEN OTHERS;
-
+  -- ABH_MUX : rABH <= rPCH WHEN u_operation.mux_abh = "00" ELSE
+  -- (OTHERS => '0');
 END behavioral;

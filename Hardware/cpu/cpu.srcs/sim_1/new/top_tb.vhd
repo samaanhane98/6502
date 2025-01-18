@@ -47,17 +47,7 @@ BEGIN
       rst => rst
     );
 
-  CLK_GEN : PROCESS
-  BEGIN
-    WAIT FOR CLK_PERIOD / 2;
-    clk <= NOT clk;
-  END PROCESS;
-
-  RST_GEN : PROCESS
-  BEGIN
-    WAIT FOR 5000 ns;
-    rst <= '0';
-    WAIT;
-  END PROCESS;
+  clk <= NOT clk AFTER CLK_PERIOD / 2;
+  rst <= '0' AFTER 5000 ns;
 
 END behavioral;
