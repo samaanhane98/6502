@@ -36,6 +36,7 @@ ENTITY top IS
 END top;
 
 ARCHITECTURE behavioral OF top IS
+  SIGNAL n_clk : STD_LOGIC;
   SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"69", OTHERS => (OTHERS => '0'));
 
   SIGNAL data_in : DB;
@@ -44,9 +45,10 @@ ARCHITECTURE behavioral OF top IS
   SIGNAL rw : RW;
 
 BEGIN
+  n_clk <= NOT clk;
 
-  RW_OPERATION : PROCESS (clk) BEGIN
-    IF rising_edge(clk) THEN
+  RW_OPERATION : PROCESS (n_clk) BEGIN
+    IF rising_edge(n_clk) THEN
       CASE (rw) IS
         WHEN READ_ENABLE =>
           data_in <= memory(to_integer(unsigned(address)));

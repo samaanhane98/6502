@@ -39,37 +39,30 @@ ENTITY cpu IS
     data_in : IN DB;
     data_out : OUT DB;
     address : OUT AB;
-    RW_out : OUT RW
+    rw_out : OUT RW
   );
 END cpu;
 
 ARCHITECTURE behavioral OF cpu IS
   SIGNAL n_clk : STD_LOGIC;
-
-  -- SIGNAL pc : PC := (OTHERS => '0');
-  -- SIGNAL acc : ACC := (OTHERS => '0');
-  -- SIGNAL rgx : RGX := (OTHERS => '0');
-  -- SIGNAL rgy : RGY := (OTHERS => '0');
-
-  -- -- Memory
-  -- SIGNAL abl : ABL := (OTHERS => '0');
-  -- SIGNAL abh : ABH := (OTHERS => '0');
-  -- SIGNAL data_bus : DB;
-
-  -- SIGNAL status : STATUS := (OTHERS => '0');
-
-  -- SIGNAL state : CPU_STATE := T0;
-  -- SIGNAL current_instruction : DECODED_INSTRUCTION;
+  SIGNAL u_operation : MICRO_OPERATION;
 
 BEGIN
   n_clk <= NOT clk;
+  rw_out <= u_operation.wr_mem;
 
   data_path_inst : ENTITY work.data_path
     PORT MAP(
       n_clk => n_clk,
+      rst => rst,
+      u_operation => u_operation,
       data_in => data_in,
       data_out => data_out,
       address => address
     );
 
+  control_path_inst : ENTITY work.control_path PORT MAP (
+    clk => clk,
+    u_operation => u_operation
+    );
 END behavioral;
