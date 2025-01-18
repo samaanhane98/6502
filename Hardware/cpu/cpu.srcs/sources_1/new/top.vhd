@@ -35,7 +35,7 @@ ARCHITECTURE behavioral OF top IS
 
   SIGNAL data_in : DB;
   SIGNAL data_out : DB;
-  SIGNAL address : AD;
+  SIGNAL address : STD_LOGIC_VECTOR(15 DOWNTO 0);
   SIGNAL rw : RW;
 
 BEGIN

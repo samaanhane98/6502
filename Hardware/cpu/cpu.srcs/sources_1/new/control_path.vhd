@@ -62,23 +62,35 @@ BEGIN
 
   BEGIN
     CASE state IS
+        -- Instruction Fetch
       WHEN T0 =>
         u_op.wr_mem := READ_ENABLE;
         u_op.mux_abl := "00";
         u_op.mux_abh := "00";
-        u_op.mux_pc := '0';
-        u_op.en_pc_incr := '1';
+        u_op.pcl_en := '1';
+        u_op.pch_en := '1';
+        u_op.mux_pc := "00";
+
         next_state <= T1;
       WHEN T1 =>
         u_op.wr_mem := READ_ENABLE;
-        u_op.mux_abl := "00";
-        u_op.mux_abh := "00";
-        u_op.mux_pc := '0';
-        u_op.en_pc_incr := '0';
+        u_op.pcl_en := '1';
+        u_op.pch_en := '1';
 
+        IF decInstruction.instruction_type = ADC THEN
+          CASE (decInstruction.addressing_mode) IS
+            WHEN IMM =>
+              u_op.ai_en := '1';
+              u_op.bi_en := '1';
+            WHEN OTHERS =>
+          END CASE;
+        END IF;
+
+        next_state <= T2;
         REPORT to_string(decInstruction);
-
       WHEN T2 =>
+        u_op.pcl_en := '0';
+        u_op.pch_en := '0';
         -- IF decInstrucion.instruction_type
       WHEN OTHERS =>
     END CASE;

@@ -2,9 +2,9 @@
 -- Company: 
 -- Engineer: 
 -- 
--- Create Date: 01/18/2025 10:21:05 AM
+-- Create Date: 01/18/2025 09:59:19 PM
 -- Design Name: 
--- Module Name: top_tb - behavioral
+-- Module Name: alu - behavioral
 -- Project Name: 
 -- Target Devices: 
 -- Tool Versions: 
@@ -29,25 +29,13 @@ USE IEEE.STD_LOGIC_1164.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-ENTITY top_tb IS
-  --  Port ( );
-END top_tb;
+ENTITY alu IS
+  PORT (
+    clk : IN STD_LOGIC
+  );
+END alu;
 
-ARCHITECTURE behavioral OF top_tb IS
-  CONSTANT CLK_PERIOD : TIME := 1000 ns;
-
-  SIGNAL clk : STD_LOGIC := '0';
-  SIGNAL rst : STD_LOGIC := '1';
+ARCHITECTURE behavioral OF alu IS
 
 BEGIN
-
-  DUT : ENTITY work.top
-    PORT MAP(
-      clk => clk,
-      rst => rst
-    );
-
-  clk <= NOT clk AFTER CLK_PERIOD / 2;
-  rst <= '0' AFTER 2000 ns;
-
 END behavioral;

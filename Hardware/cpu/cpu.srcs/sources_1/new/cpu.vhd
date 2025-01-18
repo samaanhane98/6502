@@ -38,7 +38,7 @@ ENTITY cpu IS
     rst : IN STD_LOGIC;
     data_in : IN DB;
     data_out : OUT DB;
-    address : OUT AD;
+    address : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
     rw_out : OUT RW
   );
 END cpu;
