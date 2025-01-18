@@ -35,19 +35,32 @@ ENTITY data_path IS
 END data_path;
 
 ARCHITECTURE behavioral OF data_path IS
-  -- ALU registers
-  SIGNAL AI_d, BI_d, AI_q, BI_q : STD_LOGIC_VECTOR(7 DOWNTO 0);
-
-  -- Address registers
-  SIGNAL abl : ABL := (OTHERS => '0');
-  SIGNAL abh : ABH := (OTHERS => '0');
+  -- Instruction register
+  SIGNAL IR_q : STD_LOGIC_VECTOR(7 DOWNTO 0);
 
   -- Program counter registers
   SIGNAL pcl_q : PCL := (OTHERS => '0');
   SIGNAL pch_q : PCH := (OTHERS => '0');
   SIGNAL pc_in : PC := (OTHERS => '0');
 
+  -- ALU registers
+  SIGNAL AI_d, BI_d, AI_q, BI_q : STD_LOGIC_VECTOR(7 DOWNTO 0);
+
+  -- Address registers
+  SIGNAL abl : ABL := (OTHERS => '0');
+  SIGNAL abh : ABH := (OTHERS => '0');
 BEGIN
+  -- Instruction Register
+  IR_REGISTER : ENTITY work.bits_register GENERIC MAP (
+    WIDTH => 8
+    ) PORT MAP (
+    clk => clk,
+    rst => rst,
+    d => data_in,
+    q => IR_q,
+    ce => u_operation.ir_en
+    );
+
   -- Program Counter
   PCL_REGISTER : ENTITY work.bits_register
     GENERIC MAP(
@@ -113,8 +126,17 @@ BEGIN
       ce => u_operation.bi_en
     );
 
-  ALU_inst : ENTITY work.alu PORT MAP (
-    clk => clk
-    );
+  -- ALU_inst : ENTITY work.alu PORT MAP (
+  --   clk => clk,
+  --   rst => rst,
+  --   operation
+
+  --   -- operation : IN ALU_OPERATION;
+  --   -- op_ai : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+  --   -- op_bi : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+  --   -- alu_en : IN STD_LOGIC;
+  --   -- carry : IN STD_LOGIC;
+  --   -- alu_res : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
+  --   );
 
 END behavioral;

@@ -88,25 +88,47 @@ PACKAGE cpu_pkg IS
 
   -- Micro operations
   TYPE RW IS (READ_ENABLE, WRITE_ENABLE);
+  TYPE ALU_OPERATION IS (ADC);
   TYPE MICRO_OPERATION IS RECORD
     -- ENABLES
-    ai_en : STD_LOGIC; -- A Input register enable
-    bi_en : STD_LOGIC; -- B Input register enable
+    ir_en : STD_LOGIC; -- Instruction register enable
     pcl_en : STD_LOGIC; -- PC Low register enable
     pch_en : STD_LOGIC; -- PC Low register enable
+    ai_en : STD_LOGIC; -- A Input register enable
+    bi_en : STD_LOGIC; -- B Input register enable
     wr_mem : RW; -- WRITE/READ operation
-
     -- MUX
     mux_abl : STD_LOGIC_VECTOR(1 DOWNTO 0); -- MUX for address bus low
     mux_abh : STD_LOGIC_VECTOR(1 DOWNTO 0); -- MUX for address bus high
     mux_ai : STD_LOGIC_VECTOR(1 DOWNTO 0); -- MUX for A input register
     mux_bi : STD_LOGIC_VECTOR(1 DOWNTO 0); -- MUX for B input register
     mux_pc : STD_LOGIC_VECTOR(1 DOWNTO 0); -- MUX for program counter
+
+    -- ALU
+    alu_op : ALU_OPERATION;
+    alu_en : STD_LOGIC;
   END RECORD MICRO_OPERATION;
 
+  PROCEDURE reset(VARIABLE u_op : INOUT MICRO_OPERATION);
 END PACKAGE;
 
 PACKAGE BODY cpu_pkg IS
+  PROCEDURE reset (VARIABLE u_op : INOUT MICRO_OPERATION) IS
+  BEGIN
+    u_op.ir_en := '0';
+    u_op.pcl_en := '0';
+    u_op.pch_en := '0';
+    u_op.ai_en := '0';
+    u_op.bi_en := '0';
+    u_op.wr_mem := READ_ENABLE;
+    u_op.mux_abl := "00"; -- MUX for address bus low
+    u_op.mux_abh := "00"; -- MUX for address bus high
+    u_op.mux_ai := "00"; -- MUX for A input register
+    u_op.mux_bi := "00"; -- MUX for B input register
+    u_op.mux_pc := "00"; -- MUX for program counter
+    u_op.alu_en := '0';
+    u_op.alu_op := ADC;
+  END PROCEDURE;
 
   FUNCTION decode (
     i_instr : INSTRUCTION

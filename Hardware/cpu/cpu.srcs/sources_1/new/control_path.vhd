@@ -44,9 +44,6 @@ ARCHITECTURE behavioral OF control_path IS
   SIGNAL decInstruction : DECODED_INSTRUCTION;
 
 BEGIN
-
-  decInstruction <= decode(instruction);
-
   PROCESS (clk, rst) BEGIN
     IF rising_edge(clk) THEN
       state <= next_state;
@@ -57,26 +54,38 @@ BEGIN
     END IF;
   END PROCESS;
 
-  STATE_MACHINE : PROCESS (state, decInstruction)
+  STATE_MACHINE : PROCESS (state)
     VARIABLE u_op : MICRO_OPERATION;
 
   BEGIN
+    reset(u_op); -- Reset Micro Operations to ensure correct control signals
+
     CASE state IS
-        -- Instruction Fetch
       WHEN T0 =>
-        u_op.wr_mem := READ_ENABLE;
+        -- Setup Instruction Fetch
         u_op.mux_abl := "00";
         u_op.mux_abh := "00";
+        u_op.wr_mem := READ_ENABLE;
+
+        -- Update Program Counter
         u_op.pcl_en := '1';
         u_op.pch_en := '1';
         u_op.mux_pc := "00";
 
         next_state <= T1;
       WHEN T1 =>
-        u_op.wr_mem := READ_ENABLE;
+        decInstruction <= decode(instruction);
+
+        -- Store operand in instruction register
+        u_op.ir_en := '1';
+
+        -- Update program counter
         u_op.pcl_en := '1';
         u_op.pch_en := '1';
 
+        next_state <= T2;
+      WHEN T2 =>
+        REPORT to_string(decInstruction);
         IF decInstruction.instruction_type = ADC THEN
           CASE (decInstruction.addressing_mode) IS
             WHEN IMM =>
@@ -86,12 +95,9 @@ BEGIN
           END CASE;
         END IF;
 
-        next_state <= T2;
-        REPORT to_string(decInstruction);
-      WHEN T2 =>
-        u_op.pcl_en := '0';
-        u_op.pch_en := '0';
-        -- IF decInstrucion.instruction_type
+        --   u_op.pcl_en := '0';
+        --   u_op.pch_en := '0';
+        --   -- IF decInstrucion.instruction_type
       WHEN OTHERS =>
     END CASE;
 
