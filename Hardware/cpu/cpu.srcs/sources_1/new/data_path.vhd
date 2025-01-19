@@ -46,6 +46,13 @@ ARCHITECTURE behavioral OF data_path IS
   -- ALU registers
   SIGNAL AI_d, BI_d, AI_q, BI_q : STD_LOGIC_VECTOR(7 DOWNTO 0);
 
+  -- Accumulator
+  SIGNAL ACC_d, ACC_q : ACC := (OTHERS => '0');
+
+  -- Adder hold register
+  -- SIGNAL ADD_d, ADD_q : ACC := (OTHERS => '0');
+  SIGNAL alu_res : STD_LOGIC_VECTOR(7 DOWNTO 0);
+
   -- Address registers
   SIGNAL abl : ABL := (OTHERS => '0');
   SIGNAL abh : ABH := (OTHERS => '0');
@@ -99,8 +106,11 @@ BEGIN
   (OTHERS => '0');
 
   -- ALU
-  AI_MUX : AI_d <= x"05";
-  BI_MUX : BI_d <= x"02";
+  AI_MUX : AI_d <= ACC_q WHEN u_operation.mux_ai = "00" ELSE
+  (OTHERS => '0');
+
+  BI_MUX : BI_d <= IR_q WHEN u_operation.mux_bi = "00" ELSE
+  (OTHERS => '0');
 
   AI_REGISTER : ENTITY work.bits_register
     GENERIC MAP(
@@ -126,17 +136,30 @@ BEGIN
       ce => u_operation.bi_en
     );
 
-  -- ALU_inst : ENTITY work.alu PORT MAP (
-  --   clk => clk,
-  --   rst => rst,
-  --   operation
+  -- Accumulator
+  ACC_MUX : ACC_d <= alu_res WHEN u_operation.mux_acc = "00" ELSE
+  (OTHERS => '0');
 
-  --   -- operation : IN ALU_OPERATION;
-  --   -- op_ai : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-  --   -- op_bi : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-  --   -- alu_en : IN STD_LOGIC;
-  --   -- carry : IN STD_LOGIC;
-  --   -- alu_res : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
-  --   );
+  ACC_REGISTER : ENTITY work.bits_register GENERIC MAP (
+    WIDTH => 8
+    )
+    PORT MAP(
+      clk => clk,
+      rst => rst,
+      d => ACC_d,
+      q => ACC_q,
+      ce => u_operation.acc_en
+    );
+
+  -- ALU
+  ALU_inst : ENTITY work.alu PORT MAP (
+    clk => clk,
+    rst => rst,
+    operation => u_operation.alu_op,
+    op_ai => AI_q,
+    op_bi => BI_q,
+    carry => '0', -- TODO
+    alu_res => alu_res
+    );
 
 END behavioral;

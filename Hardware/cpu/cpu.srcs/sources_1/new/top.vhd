@@ -31,7 +31,7 @@ ENTITY top IS
 END top;
 
 ARCHITECTURE behavioral OF top IS
-  SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"69", 1 => x"01", OTHERS => (OTHERS => '0'));
+  SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"69", 1 => x"01", 2 => x"69", 3 => x"02", OTHERS => (OTHERS => '0'));
   SIGNAL n_clk : STD_LOGIC;
 
   SIGNAL data_in : DB;

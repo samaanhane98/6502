@@ -89,15 +89,28 @@ BEGIN
         IF decInstruction.instruction_type = ADC THEN
           CASE (decInstruction.addressing_mode) IS
             WHEN IMM =>
+              u_op.mux_ai := "00";
+              u_op.mux_bi := "00";
+
               u_op.ai_en := '1';
               u_op.bi_en := '1';
+
+              next_state <= T3;
             WHEN OTHERS =>
           END CASE;
         END IF;
+      WHEN T3 =>
+        IF decInstruction.instruction_type = ADC THEN
+          u_op.alu_op := ADC;
+          u_op.mux_acc := "00";
+          u_op.acc_en := '1';
+          CASE (decInstruction.addressing_mode) IS
+            WHEN IMM =>
+              next_state <= T0;
 
-        --   u_op.pcl_en := '0';
-        --   u_op.pch_en := '0';
-        --   -- IF decInstrucion.instruction_type
+            WHEN OTHERS =>
+          END CASE;
+        END IF;
       WHEN OTHERS =>
     END CASE;
 

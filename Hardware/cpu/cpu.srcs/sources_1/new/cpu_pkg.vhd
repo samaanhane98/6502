@@ -97,6 +97,7 @@ PACKAGE cpu_pkg IS
     ai_en : STD_LOGIC; -- A Input register enable
     bi_en : STD_LOGIC; -- B Input register enable
     wr_mem : RW; -- WRITE/READ operation
+
     -- MUX
     mux_abl : STD_LOGIC_VECTOR(1 DOWNTO 0); -- MUX for address bus low
     mux_abh : STD_LOGIC_VECTOR(1 DOWNTO 0); -- MUX for address bus high
@@ -104,9 +105,12 @@ PACKAGE cpu_pkg IS
     mux_bi : STD_LOGIC_VECTOR(1 DOWNTO 0); -- MUX for B input register
     mux_pc : STD_LOGIC_VECTOR(1 DOWNTO 0); -- MUX for program counter
 
+    -- Accumulator
+    acc_en : STD_LOGIC;
+    mux_acc : STD_LOGIC_VECTOR(1 DOWNTO 0);
+
     -- ALU
     alu_op : ALU_OPERATION;
-    alu_en : STD_LOGIC;
   END RECORD MICRO_OPERATION;
 
   PROCEDURE reset(VARIABLE u_op : INOUT MICRO_OPERATION);
@@ -126,7 +130,6 @@ PACKAGE BODY cpu_pkg IS
     u_op.mux_ai := "00"; -- MUX for A input register
     u_op.mux_bi := "00"; -- MUX for B input register
     u_op.mux_pc := "00"; -- MUX for program counter
-    u_op.alu_en := '0';
     u_op.alu_op := ADC;
   END PROCEDURE;
 
