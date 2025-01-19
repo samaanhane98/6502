@@ -67,7 +67,7 @@ PACKAGE cpu_pkg IS
   TYPE CPU_STATE IS (T0, T1, T2, T3, T4);
 
   -- Instruction types
-  TYPE ADDRESSING_MODE IS (IMPL, IMM);
+  TYPE ADDRESSING_MODE IS (IMPL, IMM, ZERO_PAGE);
   TYPE INSTRUCTION_TYPE IS (
     NOP, ADC
   );
@@ -89,6 +89,11 @@ PACKAGE cpu_pkg IS
   -- Micro operations
   TYPE RW IS (READ_ENABLE, WRITE_ENABLE);
   TYPE ALU_OPERATION IS (ADC);
+
+  TYPE mux_abl_t IS (s_PCL, s_IR);
+  TYPE mux_abh_t IS (s_PCH);
+  TYPE mux_pc_t IS (s_INCR);
+
   TYPE MICRO_OPERATION IS RECORD
     -- ENABLES
     ir_en : STD_LOGIC; -- Instruction register enable
@@ -99,11 +104,11 @@ PACKAGE cpu_pkg IS
     wr_mem : RW; -- WRITE/READ operation
 
     -- MUX
-    mux_abl : STD_LOGIC_VECTOR(1 DOWNTO 0); -- MUX for address bus low
-    mux_abh : STD_LOGIC_VECTOR(1 DOWNTO 0); -- MUX for address bus high
+    mux_abl : mux_abl_t; -- MUX for address bus low
+    mux_abh : mux_abh_t; -- MUX for address bus high
     mux_ai : STD_LOGIC_VECTOR(1 DOWNTO 0); -- MUX for A input register
     mux_bi : STD_LOGIC_VECTOR(1 DOWNTO 0); -- MUX for B input register
-    mux_pc : STD_LOGIC_VECTOR(1 DOWNTO 0); -- MUX for program counter
+    mux_pc : mux_pc_t; -- MUX for program counter
 
     -- Accumulator
     acc_en : STD_LOGIC;
@@ -125,11 +130,11 @@ PACKAGE BODY cpu_pkg IS
     u_op.ai_en := '0';
     u_op.bi_en := '0';
     u_op.wr_mem := READ_ENABLE;
-    u_op.mux_abl := "00"; -- MUX for address bus low
-    u_op.mux_abh := "00"; -- MUX for address bus high
+    u_op.mux_abl := s_PCL; -- MUX for address bus low
+    u_op.mux_abh := s_PCH; -- MUX for address bus high
     u_op.mux_ai := "00"; -- MUX for A input register
     u_op.mux_bi := "00"; -- MUX for B input register
-    u_op.mux_pc := "00"; -- MUX for program counter
+    u_op.mux_pc := s_INCR; -- MUX for program counter
     u_op.alu_op := ADC;
   END PROCEDURE;
 
@@ -144,7 +149,13 @@ PACKAGE BODY cpu_pkg IS
         o_instr.addressing_mode := IMM;
         o_instr.instruction_length := 2;
         RETURN o_instr;
+      WHEN x"65" =>
+        o_instr.instruction_type := ADC;
+        o_instr.addressing_mode := ZERO_PAGE;
+        o_instr.instruction_length := 2;
+        RETURN o_instr;
       WHEN OTHERS =>
+
         o_instr.instruction_type := NOP;
         o_instr.addressing_mode := IMPL;
         o_instr.instruction_length := 1;
@@ -158,6 +169,7 @@ PACKAGE BODY cpu_pkg IS
     CASE am IS
       WHEN IMM => RETURN "Immediate";
       WHEN IMPL => RETURN "Implied";
+      WHEN ZERO_PAGE => RETURN "Zero Page";
       WHEN OTHERS => RETURN "UNKNOWN";
     END CASE;
   END FUNCTION;

@@ -93,19 +93,20 @@ BEGIN
       ce => u_operation.pch_en
     );
 
-  PC_MUX : pc_in <= STD_LOGIC_VECTOR(unsigned(pch_q) & unsigned(pcl_q) + 1) WHEN u_operation.mux_pc = "00" ELSE
+  PC_MUX : pc_in <= STD_LOGIC_VECTOR(unsigned(pch_q) & unsigned(pcl_q) + 1) WHEN u_operation.mux_pc = s_INCR ELSE
   (OTHERS => '0');
 
   -- Addressing
   address <= abh & abl;
 
-  ABL_MUX : abl <= pcl_q WHEN u_operation.mux_abl = "00" ELSE
+  ABL_MUX : abl <= pcl_q WHEN u_operation.mux_abl = s_PCL ELSE
+  IR_q WHEN u_operation.mux_abl = s_IR ELSE
   (OTHERS => '0');
 
-  ABH_MUX : abh <= pch_q WHEN u_operation.mux_abh = "00" ELSE
+  ABH_MUX : abh <= pch_q WHEN u_operation.mux_abh = s_PCH ELSE
   (OTHERS => '0');
 
-  -- ALU
+  -- ALU Operand registers
   AI_MUX : AI_d <= ACC_q WHEN u_operation.mux_ai = "00" ELSE
   (OTHERS => '0');
 

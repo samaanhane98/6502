@@ -63,14 +63,14 @@ BEGIN
     CASE state IS
       WHEN T0 =>
         -- Setup Instruction Fetch
-        u_op.mux_abl := "00";
-        u_op.mux_abh := "00";
+        u_op.mux_abl := s_PCL;
+        u_op.mux_abh := s_PCH;
         u_op.wr_mem := READ_ENABLE;
 
         -- Update Program Counter
         u_op.pcl_en := '1';
         u_op.pch_en := '1';
-        u_op.mux_pc := "00";
+        u_op.mux_pc := s_INCR;
 
         next_state <= T1;
       WHEN T1 =>
@@ -95,22 +95,46 @@ BEGIN
               u_op.ai_en := '1';
               u_op.bi_en := '1';
 
-              next_state <= T3;
+            WHEN ZERO_PAGE =>
+              u_op.ir_en := '1';
+              u_op.mux_abl := s_IR;
+
             WHEN OTHERS =>
           END CASE;
+          next_state <= T3;
+
         END IF;
       WHEN T3 =>
         IF decInstruction.instruction_type = ADC THEN
           u_op.alu_op := ADC;
-          u_op.mux_acc := "00";
-          u_op.acc_en := '1';
           CASE (decInstruction.addressing_mode) IS
             WHEN IMM =>
+              u_op.mux_acc := "00";
+              u_op.acc_en := '1';
               next_state <= T0;
 
+            WHEN ZERO_PAGE =>
+              u_op.mux_ai := "00";
+              u_op.mux_bi := "00";
+
+              u_op.ai_en := '1';
+              u_op.bi_en := '1';
+
+              next_state <= T4;
             WHEN OTHERS =>
           END CASE;
         END IF;
+      WHEN T4 =>
+        IF decInstruction.instruction_type = ADC THEN
+          CASE (decInstruction.addressing_mode) IS
+            WHEN ZERO_PAGE =>
+              u_op.mux_acc := "00";
+              u_op.acc_en := '1';
+              next_state <= T0;
+            WHEN OTHERS =>
+          END CASE;
+        END IF;
+
       WHEN OTHERS =>
     END CASE;
 
