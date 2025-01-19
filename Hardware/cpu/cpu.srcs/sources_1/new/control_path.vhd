@@ -109,10 +109,16 @@ BEGIN
           u_op.alu_op := ADC;
           CASE (decInstruction.addressing_mode) IS
             WHEN IMM =>
+              -- Enable status registers
+              u_op.status_en(CARRY) := '1';
+              u_op.status_en(ZERO) := '1';
+              u_op.status_en(OVERFLOW) := '1';
+              u_op.status_en(NEGATIVE) := '1';
+
+              -- Store result in accumulator
               u_op.mux_acc := "00";
               u_op.acc_en := '1';
               next_state <= T0;
-
             WHEN ZERO_PAGE =>
               u_op.mux_ai := "00";
               u_op.mux_bi := "00";

@@ -36,19 +36,39 @@ ENTITY alu IS
     op_ai : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
     op_bi : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
     carry : IN STD_LOGIC;
-    alu_res : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
+    alu_res : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
+
+    -- Status signals
+    carry_out : OUT STD_LOGIC;
+    neg_out : OUT STD_LOGIC;
+    zero_out : OUT STD_LOGIC;
+    overflow_out : OUT STD_LOGIC
   );
 END alu;
 
 ARCHITECTURE behavioral OF alu IS
-
+  SIGNAL tmp_carry : INTEGER;
+  SIGNAL tmp_result : STD_LOGIC_VECTOR(8 DOWNTO 0) := (OTHERS => '0');
 BEGIN
+  tmp_carry <= 1 WHEN carry = '1' ELSE
+    0;
 
-  PROCESS (operation, op_ai, op_bi, carry) BEGIN
+  alu_res <= tmp_result(7 DOWNTO 0);
+
+  -- Status symbols
+  overflow_out <= '0'; -- TODO
+  carry_out <= tmp_result(8);
+
+  zero_out <= '1' WHEN tmp_result(7 DOWNTO 0) = "00000000" ELSE
+    '0';
+  neg_out <= '1' WHEN tmp_result(7) = '1' ELSE
+    '0';
+
+  PROCESS (ALL)
+  BEGIN
     CASE (operation) IS
       WHEN ADC =>
-        alu_res <= STD_LOGIC_VECTOR(unsigned(op_ai) + unsigned(op_bi)); -- TODO: fix carry
+        tmp_result <= "0" & STD_LOGIC_VECTOR(unsigned(op_ai) + unsigned(op_bi) + tmp_carry);
     END CASE;
-
   END PROCESS;
 END behavioral;

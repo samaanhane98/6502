@@ -54,7 +54,7 @@ PACKAGE cpu_pkg IS
   SUBTYPE ADL IS STD_LOGIC_VECTOR(7 DOWNTO 0); -- Address Data Low bus
 
   -- Status type and indices
-  TYPE STATUS IS ARRAY(6 DOWNTO 0) OF STD_LOGIC;
+  TYPE STATUS IS ARRAY(7 DOWNTO 0) OF STD_LOGIC;
   CONSTANT CARRY : INTEGER := 0;
   CONSTANT ZERO : INTEGER := 1;
   CONSTANT INTERRUPT : INTEGER := 2;
@@ -95,13 +95,16 @@ PACKAGE cpu_pkg IS
   TYPE mux_pc_t IS (s_INCR);
 
   TYPE MICRO_OPERATION IS RECORD
+    wr_mem : RW; -- WRITE/READ operation
+
     -- ENABLES
     ir_en : STD_LOGIC; -- Instruction register enable
     pcl_en : STD_LOGIC; -- PC Low register enable
     pch_en : STD_LOGIC; -- PC Low register enable
     ai_en : STD_LOGIC; -- A Input register enable
     bi_en : STD_LOGIC; -- B Input register enable
-    wr_mem : RW; -- WRITE/READ operation
+
+    status_en : STD_LOGIC_VECTOR(7 DOWNTO 0);
 
     -- MUX
     mux_abl : mux_abl_t; -- MUX for address bus low
@@ -116,6 +119,7 @@ PACKAGE cpu_pkg IS
 
     -- ALU
     alu_op : ALU_OPERATION;
+
   END RECORD MICRO_OPERATION;
 
   PROCEDURE reset(VARIABLE u_op : INOUT MICRO_OPERATION);
@@ -129,6 +133,7 @@ PACKAGE BODY cpu_pkg IS
     u_op.pch_en := '0';
     u_op.ai_en := '0';
     u_op.bi_en := '0';
+    u_op.status_en := (OTHERS => '0');
     u_op.wr_mem := READ_ENABLE;
     u_op.mux_abl := s_PCL; -- MUX for address bus low
     u_op.mux_abh := s_PCH; -- MUX for address bus high

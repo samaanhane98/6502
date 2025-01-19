@@ -24,6 +24,9 @@ USE IEEE.NUMERIC_STD.ALL;
 USE work.cpu_pkg.ALL;
 
 ENTITY data_path IS
+  GENERIC (
+    PC_INIT : UNSIGNED(15 DOWNTO 0) := (OTHERS => '0') -- First instruction address
+  );
   PORT (
     clk : IN STD_LOGIC;
     rst : IN STD_LOGIC;
@@ -38,6 +41,8 @@ ARCHITECTURE behavioral OF data_path IS
   -- Instruction register
   SIGNAL IR_q : STD_LOGIC_VECTOR(7 DOWNTO 0);
 
+  SIGNAL status_d, status_q : STATUS := (OTHERS => '0');
+
   -- Program counter registers
   SIGNAL pcl_q : PCL := (OTHERS => '0');
   SIGNAL pch_q : PCH := (OTHERS => '0');
@@ -50,7 +55,6 @@ ARCHITECTURE behavioral OF data_path IS
   SIGNAL ACC_d, ACC_q : ACC := (OTHERS => '0');
 
   -- Adder hold register
-  -- SIGNAL ADD_d, ADD_q : ACC := (OTHERS => '0');
   SIGNAL alu_res : STD_LOGIC_VECTOR(7 DOWNTO 0);
 
   -- Address registers
@@ -69,9 +73,13 @@ BEGIN
     );
 
   -- Program Counter
+  PC_MUX : pc_in <= STD_LOGIC_VECTOR(unsigned(pch_q) & unsigned(pcl_q) + 1) WHEN u_operation.mux_pc = s_INCR ELSE
+  (OTHERS => '0');
+
   PCL_REGISTER : ENTITY work.bits_register
     GENERIC MAP(
-      WIDTH => 8
+      WIDTH => 8,
+      INIT_VALUE => to_integer(PC_INIT(7 DOWNTO 0))
     )
     PORT MAP(
       clk => clk,
@@ -83,7 +91,8 @@ BEGIN
 
   PCH_REGISTER : ENTITY work.bits_register
     GENERIC MAP(
-      WIDTH => 8
+      WIDTH => 8,
+      INIT_VALUE => to_integer(PC_INIT(15 DOWNTO 8))
     )
     PORT MAP(
       clk => clk,
@@ -92,9 +101,6 @@ BEGIN
       q => PCH_q,
       ce => u_operation.pch_en
     );
-
-  PC_MUX : pc_in <= STD_LOGIC_VECTOR(unsigned(pch_q) & unsigned(pcl_q) + 1) WHEN u_operation.mux_pc = s_INCR ELSE
-  (OTHERS => '0');
 
   -- Addressing
   address <= abh & abl;
@@ -159,8 +165,19 @@ BEGIN
     operation => u_operation.alu_op,
     op_ai => AI_q,
     op_bi => BI_q,
-    carry => '0', -- TODO
-    alu_res => alu_res
+    carry => status_q(CARRY),
+    alu_res => alu_res,
+    carry_out => status_d(CARRY),
+    neg_out => status_d(NEGATIVE),
+    zero_out => status_d(ZERO),
+    overflow_out => status_d(OVERFLOW)
     );
 
+  STATUS_REGISTER : ENTITY work.status_register PORT MAP (
+    clk => clk,
+    rst => rst,
+    d => status_d,
+    q => status_q,
+    ce => u_operation.status_en
+    );
 END behavioral;
