@@ -89,20 +89,32 @@ BEGIN
         IF decInstruction.instruction_type = ADC THEN
           CASE (decInstruction.addressing_mode) IS
             WHEN IMM =>
-              u_op.mux_ai := "00";
-              u_op.mux_bi := "00";
+              u_op.mux_ai := s_ACC;
+              u_op.mux_bi := s_IR;
 
               u_op.ai_en := '1';
               u_op.bi_en := '1';
 
             WHEN ZERO_PAGE =>
-              u_op.ir_en := '1';
-              u_op.mux_abl := s_IR;
+              u_op.mux_db := s_DL;
+              u_op.mux_abl := s_DL;
+              -- u_op.ir_en := '1';
+
+            WHEN ZERO_PAGE_X =>
+              u_op.mux_ai := s_RGX;
+              u_op.mux_bi := s_DL;
+
+              u_op.ai_en := '1';
+              u_op.bi_en := '1';
+
+            WHEN ABSOLUTE =>
 
             WHEN OTHERS =>
           END CASE;
           next_state <= T3;
 
+        ELSE
+          next_state <= T0;
         END IF;
       WHEN T3 =>
         IF decInstruction.instruction_type = ADC THEN
@@ -116,31 +128,54 @@ BEGIN
               u_op.status_en(NEGATIVE) := '1';
 
               -- Store result in accumulator
-              u_op.mux_acc := "00";
+              u_op.mux_acc := s_ALU;
               u_op.acc_en := '1';
               next_state <= T0;
             WHEN ZERO_PAGE =>
-              u_op.mux_ai := "00";
-              u_op.mux_bi := "00";
+              u_op.mux_ai := s_ACC;
+              u_op.mux_bi := s_DL;
 
               u_op.ai_en := '1';
               u_op.bi_en := '1';
 
+              next_state <= T4;
+            WHEN ZERO_PAGE_X =>
+              u_op.alu_op := AD;
+              u_op.mux_abl := s_ALU;
               next_state <= T4;
             WHEN OTHERS =>
           END CASE;
         END IF;
       WHEN T4 =>
         IF decInstruction.instruction_type = ADC THEN
+          u_op.alu_op := ADC;
           CASE (decInstruction.addressing_mode) IS
             WHEN ZERO_PAGE =>
-              u_op.mux_acc := "00";
+              u_op.mux_acc := s_ALU;
+              u_op.acc_en := '1';
+              next_state <= T0;
+            WHEN ZERO_PAGE_X =>
+              u_op.mux_bi := s_DL;
+              u_op.mux_ai := s_ACC;
+
+              u_op.ai_en := '1';
+              u_op.bi_en := '1';
+
+              next_state <= T5;
+            WHEN OTHERS =>
+          END CASE;
+        END IF;
+
+      WHEN T5 =>
+        IF decInstruction.instruction_type = ADC THEN
+          CASE (decInstruction.addressing_mode) IS
+            WHEN ZERO_PAGE_X =>
+              u_op.mux_acc := s_ALU;
               u_op.acc_en := '1';
               next_state <= T0;
             WHEN OTHERS =>
           END CASE;
         END IF;
-
       WHEN OTHERS =>
     END CASE;
 

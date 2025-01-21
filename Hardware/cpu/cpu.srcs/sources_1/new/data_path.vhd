@@ -57,9 +57,13 @@ ARCHITECTURE behavioral OF data_path IS
   -- Adder hold register
   SIGNAL alu_res : STD_LOGIC_VECTOR(7 DOWNTO 0);
 
+  -- X & Y registers
+  SIGNAL RGX_d, RGX_q : RGX := (OTHERS => '0');
+
   -- Address registers
   SIGNAL abl : ABL := (OTHERS => '0');
   SIGNAL abh : ABH := (OTHERS => '0');
+
 BEGIN
   -- Instruction Register
   IR_REGISTER : ENTITY work.bits_register GENERIC MAP (
@@ -107,16 +111,16 @@ BEGIN
 
   ABL_MUX : abl <= pcl_q WHEN u_operation.mux_abl = s_PCL ELSE
   IR_q WHEN u_operation.mux_abl = s_IR ELSE
+  alu_res WHEN u_operation.mux_abl = s_ALU ELSE
   (OTHERS => '0');
 
-  ABH_MUX : abh <= pch_q WHEN u_operation.mux_abh = s_PCH ELSE
+  ABH_MUX : abh <= pch_q WHEN u_operation.mux_abh = s_PCH
+ELSE
   (OTHERS => '0');
 
   -- ALU Operand registers
-  AI_MUX : AI_d <= ACC_q WHEN u_operation.mux_ai = "00" ELSE
-  (OTHERS => '0');
-
-  BI_MUX : BI_d <= IR_q WHEN u_operation.mux_bi = "00" ELSE
+  AI_MUX : AI_d <= ACC_q WHEN u_operation.mux_ai = s_ACC ELSE
+  RGX_q WHEN u_operation.mux_ai = s_RGX ELSE
   (OTHERS => '0');
 
   AI_REGISTER : ENTITY work.bits_register
@@ -131,6 +135,9 @@ BEGIN
       ce => u_operation.ai_en
     );
 
+  BI_MUX : BI_d <= IR_q WHEN u_operation.mux_bi = s_IR ELSE
+  (OTHERS => '0');
+
   BI_REGISTER : ENTITY work.bits_register
     GENERIC MAP(
       WIDTH => 8
@@ -143,8 +150,23 @@ BEGIN
       ce => u_operation.bi_en
     );
 
+  -- X & Y registers
+  RGX_MUX : RGX_d <= alu_res WHEN u_operation.mux_rgx = s_ALU ELSE
+  (OTHERS => '0');
+
+  X_REGISTER : ENTITY work.bits_register GENERIC MAP (
+    WIDTH => 8
+    )
+    PORT MAP(
+      clk => clk,
+      rst => rst,
+      d => RGX_d,
+      q => RGX_q,
+      ce => u_operation.rgx_en
+    );
+
   -- Accumulator
-  ACC_MUX : ACC_d <= alu_res WHEN u_operation.mux_acc = "00" ELSE
+  ACC_MUX : ACC_d <= alu_res WHEN u_operation.mux_acc = s_ALU ELSE
   (OTHERS => '0');
 
   ACC_REGISTER : ENTITY work.bits_register GENERIC MAP (

@@ -47,6 +47,7 @@ PACKAGE cpu_pkg IS
   SUBTYPE ACC IS STD_LOGIC_VECTOR(7 DOWNTO 0);
   SUBTYPE RGX IS STD_LOGIC_VECTOR(7 DOWNTO 0);
   SUBTYPE RGY IS STD_LOGIC_VECTOR(7 DOWNTO 0);
+
   -- Busses
   SUBTYPE DB IS STD_LOGIC_VECTOR(7 DOWNTO 0); -- Data bus
   SUBTYPE SB IS STD_LOGIC_VECTOR(7 DOWNTO 0); -- Status bus
@@ -64,10 +65,10 @@ PACKAGE cpu_pkg IS
   CONSTANT OVERFLOW : INTEGER := 6;
   CONSTANT NEGATIVE : INTEGER := 7;
 
-  TYPE CPU_STATE IS (T0, T1, T2, T3, T4);
+  TYPE CPU_STATE IS (T0, T1, T2, T3, T4, T5);
 
   -- Instruction types
-  TYPE ADDRESSING_MODE IS (IMPL, IMM, ZERO_PAGE);
+  TYPE ADDRESSING_MODE IS (IMPL, IMM, ZERO_PAGE, ZERO_PAGE_X, ABSOLUTE);
   TYPE INSTRUCTION_TYPE IS (
     NOP, ADC
   );
@@ -88,11 +89,16 @@ PACKAGE cpu_pkg IS
 
   -- Micro operations
   TYPE RW IS (READ_ENABLE, WRITE_ENABLE);
-  TYPE ALU_OPERATION IS (ADC);
+  TYPE ALU_OPERATION IS (ADC, AD);
 
-  TYPE mux_abl_t IS (s_PCL, s_IR);
-  TYPE mux_abh_t IS (s_PCH);
+  TYPE mux_db_t IS (s_DL);
+  TYPE mux_abl_t IS (s_PCL, s_IR, s_ALU, s_DL);
+  TYPE mux_abh_t IS (s_PCH, s_DL);
+  TYPE mux_ai_t IS (s_ACC, s_RGX);
+  TYPE mux_bi_t IS (s_IR, s_DL); -- Is this the proper name?
   TYPE mux_pc_t IS (s_INCR);
+  TYPE mux_rgx_t IS (s_ALU);
+  TYPE mux_acc_t IS (s_ALU);
 
   TYPE MICRO_OPERATION IS RECORD
     wr_mem : RW; -- WRITE/READ operation
@@ -104,18 +110,24 @@ PACKAGE cpu_pkg IS
     ai_en : STD_LOGIC; -- A Input register enable
     bi_en : STD_LOGIC; -- B Input register enable
 
+    rgx_en : STD_LOGIC; -- X index register enable
+    rgy_en : STD_LOGIC; -- X index register enable
+
     status_en : STD_LOGIC_VECTOR(7 DOWNTO 0);
 
     -- MUX
+    mux_db : mux_db_t;
     mux_abl : mux_abl_t; -- MUX for address bus low
     mux_abh : mux_abh_t; -- MUX for address bus high
-    mux_ai : STD_LOGIC_VECTOR(1 DOWNTO 0); -- MUX for A input register
-    mux_bi : STD_LOGIC_VECTOR(1 DOWNTO 0); -- MUX for B input register
+    mux_ai : mux_ai_t; -- MUX for A input register
+    mux_bi : mux_bi_t; -- MUX for B input register
     mux_pc : mux_pc_t; -- MUX for program counter
+    mux_dl : STD_LOGIC;
+    mux_rgx : mux_rgx_t;
 
     -- Accumulator
     acc_en : STD_LOGIC;
-    mux_acc : STD_LOGIC_VECTOR(1 DOWNTO 0);
+    mux_acc : mux_acc_t;
 
     -- ALU
     alu_op : ALU_OPERATION;
@@ -133,13 +145,20 @@ PACKAGE BODY cpu_pkg IS
     u_op.pch_en := '0';
     u_op.ai_en := '0';
     u_op.bi_en := '0';
+    u_op.rgx_en := '0';
+    u_op.rgy_en := '0';
     u_op.status_en := (OTHERS => '0');
     u_op.wr_mem := READ_ENABLE;
+    u_op.mux_db := s_DL;
     u_op.mux_abl := s_PCL; -- MUX for address bus low
     u_op.mux_abh := s_PCH; -- MUX for address bus high
-    u_op.mux_ai := "00"; -- MUX for A input register
-    u_op.mux_bi := "00"; -- MUX for B input register
+    u_op.mux_ai := s_ACC; -- MUX for A input register
+    u_op.mux_bi := s_IR; -- MUX for B input register
     u_op.mux_pc := s_INCR; -- MUX for program counter
+    u_op.mux_dl := '0';
+    u_op.acc_en := '0';
+    u_op.mux_rgx := s_ALU;
+    u_op.mux_acc := s_ALU;
     u_op.alu_op := ADC;
   END PROCEDURE;
 
@@ -153,19 +172,27 @@ PACKAGE BODY cpu_pkg IS
         o_instr.instruction_type := ADC;
         o_instr.addressing_mode := IMM;
         o_instr.instruction_length := 2;
-        RETURN o_instr;
       WHEN x"65" =>
         o_instr.instruction_type := ADC;
         o_instr.addressing_mode := ZERO_PAGE;
         o_instr.instruction_length := 2;
-        RETURN o_instr;
+      WHEN x"75" =>
+        o_instr.instruction_type := ADC;
+        o_instr.addressing_mode := ZERO_PAGE_X;
+        o_instr.instruction_length := 2;
+
+      WHEN x"6D" =>
+        o_instr.instruction_type := ADC;
+        o_instr.addressing_mode := ABSOLUTE;
+        o_instr.instruction_length := 3;
+
       WHEN OTHERS =>
 
         o_instr.instruction_type := NOP;
         o_instr.addressing_mode := IMPL;
         o_instr.instruction_length := 1;
-        RETURN o_instr;
     END CASE;
+    RETURN o_instr;
   END;
 
   -- Function to convert ADDRESSING_MODE to a string
@@ -175,6 +202,8 @@ PACKAGE BODY cpu_pkg IS
       WHEN IMM => RETURN "Immediate";
       WHEN IMPL => RETURN "Implied";
       WHEN ZERO_PAGE => RETURN "Zero Page";
+      WHEN ZERO_PAGE_X => RETURN "Zero Page X";
+      WHEN ABSOLUTE => RETURN "Absolute";
       WHEN OTHERS => RETURN "UNKNOWN";
     END CASE;
   END FUNCTION;

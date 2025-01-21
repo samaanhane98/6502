@@ -56,8 +56,10 @@ BEGIN
   alu_res <= tmp_result(7 DOWNTO 0);
 
   -- Status symbols
+
   overflow_out <= '0'; -- TODO
-  carry_out <= tmp_result(8);
+  carry_out <= tmp_result(8) WHEN operation = ADC ELSE
+    '0';
 
   zero_out <= '1' WHEN tmp_result(7 DOWNTO 0) = "00000000" ELSE
     '0';
@@ -69,6 +71,8 @@ BEGIN
     CASE (operation) IS
       WHEN ADC =>
         tmp_result <= "0" & STD_LOGIC_VECTOR(unsigned(op_ai) + unsigned(op_bi) + tmp_carry);
+      WHEN AD =>
+        tmp_result <= "0" & STD_LOGIC_VECTOR(unsigned(op_ai) + unsigned(op_bi));
     END CASE;
   END PROCESS;
 END behavioral;
