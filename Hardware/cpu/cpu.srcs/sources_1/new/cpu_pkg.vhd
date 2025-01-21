@@ -49,7 +49,6 @@ PACKAGE cpu_pkg IS
   SUBTYPE RGY IS STD_LOGIC_VECTOR(7 DOWNTO 0);
 
   -- Busses
-  SUBTYPE DB IS STD_LOGIC_VECTOR(7 DOWNTO 0); -- Data bus
   SUBTYPE SB IS STD_LOGIC_VECTOR(7 DOWNTO 0); -- Status bus
   SUBTYPE ADH IS STD_LOGIC_VECTOR(15 DOWNTO 8); -- Address Data High bus
   SUBTYPE ADL IS STD_LOGIC_VECTOR(7 DOWNTO 0); -- Address Data Low bus
@@ -91,11 +90,10 @@ PACKAGE cpu_pkg IS
   TYPE RW IS (READ_ENABLE, WRITE_ENABLE);
   TYPE ALU_OPERATION IS (ADC, AD);
 
-  TYPE mux_db_t IS (s_DL);
-  TYPE mux_abl_t IS (s_PCL, s_IR, s_ALU, s_DL);
-  TYPE mux_abh_t IS (s_PCH, s_DL);
+  TYPE mux_abl_t IS (s_PCL, s_ALU, s_ADL);
+  TYPE mux_abh_t IS (s_PCH, s_ADH);
   TYPE mux_ai_t IS (s_ACC, s_RGX);
-  TYPE mux_bi_t IS (s_IR, s_DL); -- Is this the proper name?
+  TYPE mux_bi_t IS (s_DB); -- Is this the proper name?
   TYPE mux_pc_t IS (s_INCR);
   TYPE mux_rgx_t IS (s_ALU);
   TYPE mux_acc_t IS (s_ALU);
@@ -116,7 +114,6 @@ PACKAGE cpu_pkg IS
     status_en : STD_LOGIC_VECTOR(7 DOWNTO 0);
 
     -- MUX
-    mux_db : mux_db_t;
     mux_abl : mux_abl_t; -- MUX for address bus low
     mux_abh : mux_abh_t; -- MUX for address bus high
     mux_ai : mux_ai_t; -- MUX for A input register
@@ -149,11 +146,10 @@ PACKAGE BODY cpu_pkg IS
     u_op.rgy_en := '0';
     u_op.status_en := (OTHERS => '0');
     u_op.wr_mem := READ_ENABLE;
-    u_op.mux_db := s_DL;
     u_op.mux_abl := s_PCL; -- MUX for address bus low
     u_op.mux_abh := s_PCH; -- MUX for address bus high
     u_op.mux_ai := s_ACC; -- MUX for A input register
-    u_op.mux_bi := s_IR; -- MUX for B input register
+    u_op.mux_bi := s_DB; -- MUX for B input register
     u_op.mux_pc := s_INCR; -- MUX for program counter
     u_op.mux_dl := '0';
     u_op.acc_en := '0';

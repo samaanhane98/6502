@@ -11,9 +11,9 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="1.308333 us"></ZoomStartTime>
-      <ZoomEndTime time="5.738334 us"></ZoomEndTime>
-      <Cursor1Time time="4.188333 us"></Cursor1Time>
+      <ZoomStartTime time="0.000000 us"></ZoomStartTime>
+      <ZoomEndTime time="5.390001 us"></ZoomEndTime>
+      <Cursor1Time time="1.000000 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="212"></NameColumnWidth>
@@ -63,11 +63,6 @@
       <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/u_operation">
          <obj_property name="ElementShortName">u_operation</obj_property>
          <obj_property name="ObjectShortName">u_operation</obj_property>
-         <obj_property name="isExpanded"></obj_property>
-      </wvobject>
-      <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/DL">
-         <obj_property name="ElementShortName">DL[7:0]</obj_property>
-         <obj_property name="ObjectShortName">DL[7:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/data_in">
          <obj_property name="ElementShortName">data_in[7:0]</obj_property>
@@ -76,6 +71,14 @@
       <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/DB">
          <obj_property name="ElementShortName">DB[7:0]</obj_property>
          <obj_property name="ObjectShortName">DB[7:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/DATA_d">
+         <obj_property name="ElementShortName">DATA_d[7:0]</obj_property>
+         <obj_property name="ObjectShortName">DATA_d[7:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/DATA_q">
+         <obj_property name="ElementShortName">DATA_q[7:0]</obj_property>
+         <obj_property name="ObjectShortName">DATA_q[7:0]</obj_property>
       </wvobject>
       <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/data_out">
          <obj_property name="ElementShortName">data_out[7:0]</obj_property>

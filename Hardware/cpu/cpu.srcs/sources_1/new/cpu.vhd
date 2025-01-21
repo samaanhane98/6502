@@ -36,8 +36,8 @@ ENTITY cpu IS
   PORT (
     clk : IN STD_LOGIC;
     rst : IN STD_LOGIC;
-    data_in : IN DB;
-    data_out : OUT DB;
+    data_in : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+    data_out : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
     address : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
     rw_out : OUT RW
   );

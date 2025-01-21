@@ -31,15 +31,18 @@ ENTITY data_path IS
     clk : IN STD_LOGIC;
     rst : IN STD_LOGIC;
     u_operation : IN MICRO_OPERATION;
-    data_in : IN DB;
-    data_out : OUT DB;
+    data_in : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+    data_out : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
     address : OUT STD_LOGIC_VECTOR(15 DOWNTO 0)
   );
 END data_path;
 
 ARCHITECTURE behavioral OF data_path IS
-  -- Instruction register
-  SIGNAL IR_q : STD_LOGIC_VECTOR(7 DOWNTO 0);
+  -- BUSES
+  SIGNAL DB : STD_LOGIC_VECTOR(7 DOWNTO 0);
+
+  -- Data register
+  SIGNAL DATA_d, DATA_q : STD_LOGIC_VECTOR(7 DOWNTO 0) := (OTHERS => '0');
 
   SIGNAL status_d, status_q : STATUS := (OTHERS => '0');
 
@@ -65,15 +68,19 @@ ARCHITECTURE behavioral OF data_path IS
   SIGNAL abh : ABH := (OTHERS => '0');
 
 BEGIN
-  -- Instruction Register
-  IR_REGISTER : ENTITY work.bits_register GENERIC MAP (
+  DB <= DATA_q;
+
+  -- ! This register does not exist in the actual processor but latches are outdated in cpus
+  DATA_MUX : DATA_d <= data_in;
+  DATA_REGISTER : ENTITY work.bits_register GENERIC MAP (
     WIDTH => 8
-    ) PORT MAP (
-    clk => clk,
-    rst => rst,
-    d => data_in,
-    q => IR_q,
-    ce => u_operation.ir_en
+    )
+    PORT MAP(
+      clk => clk,
+      rst => rst,
+      d => DATA_d,
+      q => DATA_q,
+      ce => '1'
     );
 
   -- Program Counter
@@ -110,12 +117,13 @@ BEGIN
   address <= abh & abl;
 
   ABL_MUX : abl <= pcl_q WHEN u_operation.mux_abl = s_PCL ELSE
-  IR_q WHEN u_operation.mux_abl = s_IR ELSE
+  data_q WHEN u_operation.mux_abl = s_ADL ELSE
   alu_res WHEN u_operation.mux_abl = s_ALU ELSE
   (OTHERS => '0');
 
   ABH_MUX : abh <= pch_q WHEN u_operation.mux_abh = s_PCH
 ELSE
+  data_q WHEN u_operation.mux_abh = s_ADH ELSE
   (OTHERS => '0');
 
   -- ALU Operand registers
@@ -135,7 +143,7 @@ ELSE
       ce => u_operation.ai_en
     );
 
-  BI_MUX : BI_d <= IR_q WHEN u_operation.mux_bi = s_IR ELSE
+  BI_MUX : BI_d <= DB WHEN u_operation.mux_bi = s_DB ELSE
   (OTHERS => '0');
 
   BI_REGISTER : ENTITY work.bits_register
@@ -155,7 +163,8 @@ ELSE
   (OTHERS => '0');
 
   X_REGISTER : ENTITY work.bits_register GENERIC MAP (
-    WIDTH => 8
+    WIDTH => 8,
+    INIT_VALUE => 1
     )
     PORT MAP(
       clk => clk,

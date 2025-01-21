@@ -90,19 +90,18 @@ BEGIN
           CASE (decInstruction.addressing_mode) IS
             WHEN IMM =>
               u_op.mux_ai := s_ACC;
-              u_op.mux_bi := s_IR;
+              u_op.mux_bi := s_DB;
 
               u_op.ai_en := '1';
               u_op.bi_en := '1';
 
             WHEN ZERO_PAGE =>
-              u_op.mux_db := s_DL;
-              u_op.mux_abl := s_DL;
+              u_op.mux_abl := s_ADL;
               -- u_op.ir_en := '1';
 
             WHEN ZERO_PAGE_X =>
               u_op.mux_ai := s_RGX;
-              u_op.mux_bi := s_DL;
+              u_op.mux_bi := s_DB;
 
               u_op.ai_en := '1';
               u_op.bi_en := '1';
@@ -133,7 +132,7 @@ BEGIN
               next_state <= T0;
             WHEN ZERO_PAGE =>
               u_op.mux_ai := s_ACC;
-              u_op.mux_bi := s_DL;
+              u_op.mux_bi := s_DB;
 
               u_op.ai_en := '1';
               u_op.bi_en := '1';
@@ -155,7 +154,7 @@ BEGIN
               u_op.acc_en := '1';
               next_state <= T0;
             WHEN ZERO_PAGE_X =>
-              u_op.mux_bi := s_DL;
+              u_op.mux_bi := s_DB;
               u_op.mux_ai := s_ACC;
 
               u_op.ai_en := '1';
