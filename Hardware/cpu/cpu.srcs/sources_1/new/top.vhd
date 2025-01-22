@@ -36,23 +36,28 @@ ARCHITECTURE behavioral OF top IS
   -- SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"75", 1 => x"04", 5 => x"AB", OTHERS => (OTHERS => '0'));
   -- SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"6D", 1 => x"01", 2 => x"01", 257 => x"AA", OTHERS => (OTHERS => '0'));
 
+  -- ? Added for better modeling
+  SIGNAL PHI0, PHI2 : STD_LOGIC;
+
   SIGNAL data_in : STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL data_out : STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL address : STD_LOGIC_VECTOR(15 DOWNTO 0);
   SIGNAL rw : RW;
 
 BEGIN
+  PHI0 <= clk;
+  PHI2 <= NOT clk;
 
-  data_in <= memory(to_integer(unsigned(address)));
-  -- RW_OPERATION : PROCESS (clk) BEGIN
-  --   IF rising_edge(clk) THEN
-  --     CASE (rw) IS
-  --       WHEN READ_ENABLE =>
-  --       WHEN WRITE_ENABLE =>
-  --         memory(to_integer(unsigned(address))) <= data_out;
-  --     END CASE;
-  --   END IF;
-  -- END PROCESS;
+  RW_OPERATION : PROCESS (PHI0) BEGIN
+    IF rising_edge(PHI0) THEN
+      CASE (rw) IS
+        WHEN READ_ENABLE =>
+          data_in <= memory(to_integer(unsigned(address)));
+        WHEN WRITE_ENABLE =>
+          memory(to_integer(unsigned(address))) <= data_out;
+      END CASE;
+    END IF;
+  END PROCESS;
 
   cpu_inst : ENTITY work.cpu
     GENERIC MAP(

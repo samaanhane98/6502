@@ -13,16 +13,20 @@
    <zoom_setting>
       <ZoomStartTime time="0.000000 us"></ZoomStartTime>
       <ZoomEndTime time="10.240001 us"></ZoomEndTime>
-      <Cursor1Time time="1.000000 us"></Cursor1Time>
+      <Cursor1Time time="2.000000 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="208"></NameColumnWidth>
       <ValueColumnWidth column_width="60"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="8" />
-   <wvobject type="logic" fp_name="/top_tb/DUT/clk">
-      <obj_property name="ElementShortName">clk</obj_property>
-      <obj_property name="ObjectShortName">clk</obj_property>
+   <WVObjectSize size="9" />
+   <wvobject type="logic" fp_name="/top_tb/DUT/PHI0">
+      <obj_property name="ElementShortName">PHI0</obj_property>
+      <obj_property name="ObjectShortName">PHI0</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/top_tb/DUT/PHI2">
+      <obj_property name="ElementShortName">PHI2</obj_property>
+      <obj_property name="ObjectShortName">PHI2</obj_property>
    </wvobject>
    <wvobject type="logic" fp_name="/top_tb/DUT/rst">
       <obj_property name="ElementShortName">rst</obj_property>
@@ -47,10 +51,9 @@
    <wvobject type="group" fp_name="group57">
       <obj_property name="label">DATA</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
-      <wvobject type="logic" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/n_clk">
-         <obj_property name="ElementShortName">n_clk</obj_property>
-         <obj_property name="ObjectShortName">n_clk</obj_property>
+      <wvobject type="logic" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/clk">
+         <obj_property name="ElementShortName">clk</obj_property>
+         <obj_property name="ObjectShortName">clk</obj_property>
       </wvobject>
       <wvobject type="logic" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/rst">
          <obj_property name="ElementShortName">rst</obj_property>
@@ -128,6 +131,7 @@
       <wvobject type="group" fp_name="group60">
          <obj_property name="label">BI</obj_property>
          <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="isExpanded"></obj_property>
          <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/BI_d">
             <obj_property name="ElementShortName">BI_d[7:0]</obj_property>
             <obj_property name="ObjectShortName">BI_d[7:0]</obj_property>
@@ -152,54 +156,6 @@
       <wvobject type="group" fp_name="group104">
          <obj_property name="label">ALU</obj_property>
          <obj_property name="DisplayName">label</obj_property>
-         <wvobject type="logic" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/ALU_inst/clk">
-            <obj_property name="ElementShortName">clk</obj_property>
-            <obj_property name="ObjectShortName">clk</obj_property>
-         </wvobject>
-         <wvobject type="logic" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/ALU_inst/rst">
-            <obj_property name="ElementShortName">rst</obj_property>
-            <obj_property name="ObjectShortName">rst</obj_property>
-         </wvobject>
-         <wvobject type="other" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/ALU_inst/operation">
-            <obj_property name="ElementShortName">operation</obj_property>
-            <obj_property name="ObjectShortName">operation</obj_property>
-         </wvobject>
-         <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/ALU_inst/op_ai">
-            <obj_property name="ElementShortName">op_ai[7:0]</obj_property>
-            <obj_property name="ObjectShortName">op_ai[7:0]</obj_property>
-         </wvobject>
-         <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/ALU_inst/op_bi">
-            <obj_property name="ElementShortName">op_bi[7:0]</obj_property>
-            <obj_property name="ObjectShortName">op_bi[7:0]</obj_property>
-         </wvobject>
-         <wvobject type="logic" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/ALU_inst/carry">
-            <obj_property name="ElementShortName">carry</obj_property>
-            <obj_property name="ObjectShortName">carry</obj_property>
-         </wvobject>
-         <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/ALU_inst/alu_res">
-            <obj_property name="ElementShortName">alu_res[7:0]</obj_property>
-            <obj_property name="ObjectShortName">alu_res[7:0]</obj_property>
-         </wvobject>
-         <wvobject type="logic" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/ALU_inst/carry_out">
-            <obj_property name="ElementShortName">carry_out</obj_property>
-            <obj_property name="ObjectShortName">carry_out</obj_property>
-         </wvobject>
-         <wvobject type="logic" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/ALU_inst/neg_out">
-            <obj_property name="ElementShortName">neg_out</obj_property>
-            <obj_property name="ObjectShortName">neg_out</obj_property>
-         </wvobject>
-         <wvobject type="logic" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/ALU_inst/zero_out">
-            <obj_property name="ElementShortName">zero_out</obj_property>
-            <obj_property name="ObjectShortName">zero_out</obj_property>
-         </wvobject>
-         <wvobject type="logic" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/ALU_inst/overflow_out">
-            <obj_property name="ElementShortName">overflow_out</obj_property>
-            <obj_property name="ObjectShortName">overflow_out</obj_property>
-         </wvobject>
-         <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/ALU_inst/tmp_result">
-            <obj_property name="ElementShortName">tmp_result[8:0]</obj_property>
-            <obj_property name="ObjectShortName">tmp_result[8:0]</obj_property>
-         </wvobject>
       </wvobject>
       <wvobject type="group" fp_name="group58">
          <obj_property name="label">ADB</obj_property>
@@ -241,6 +197,10 @@
       <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/control_path_inst/instruction">
          <obj_property name="ElementShortName">instruction[7:0]</obj_property>
          <obj_property name="ObjectShortName">instruction[7:0]</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/control_path_inst/IR">
+         <obj_property name="ElementShortName">IR[7:0]</obj_property>
+         <obj_property name="ObjectShortName">IR[7:0]</obj_property>
       </wvobject>
       <wvobject type="other" fp_name="/top_tb/DUT/cpu_inst/control_path_inst/state">
          <obj_property name="ElementShortName">state</obj_property>
