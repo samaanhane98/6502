@@ -28,7 +28,7 @@ ENTITY data_path IS
     PC_INIT : UNSIGNED(15 DOWNTO 0) := (OTHERS => '0') -- First instruction address
   );
   PORT (
-    clk : IN STD_LOGIC;
+    n_clk : IN STD_LOGIC;
     rst : IN STD_LOGIC;
     u_operation : IN MICRO_OPERATION;
     data_in : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
@@ -38,9 +38,6 @@ ENTITY data_path IS
 END data_path;
 
 ARCHITECTURE behavioral OF data_path IS
-  -- BUSES
-  SIGNAL DB : STD_LOGIC_VECTOR(7 DOWNTO 0);
-
   -- Data register
   SIGNAL DATA_d, DATA_q : STD_LOGIC_VECTOR(7 DOWNTO 0) := (OTHERS => '0');
 
@@ -64,24 +61,22 @@ ARCHITECTURE behavioral OF data_path IS
   SIGNAL RGX_d, RGX_q : RGX := (OTHERS => '0');
 
   -- Address registers
-  SIGNAL abl : ABL := (OTHERS => '0');
-  SIGNAL abh : ABH := (OTHERS => '0');
-
+  SIGNAL ABL_d, ABL_q : STD_LOGIC_VECTOR(7 DOWNTO 0) := (OTHERS => '0');
+  SIGNAL ABH_d, ABH_q : STD_LOGIC_VECTOR(7 DOWNTO 0) := (OTHERS => '0');
 BEGIN
-  DB <= DATA_q;
-
   -- ! This register does not exist in the actual processor but latches are outdated in cpus
-  DATA_MUX : DATA_d <= data_in;
-  DATA_REGISTER : ENTITY work.bits_register GENERIC MAP (
-    WIDTH => 8
-    )
-    PORT MAP(
-      clk => clk,
-      rst => rst,
-      d => DATA_d,
-      q => DATA_q,
-      ce => '1'
-    );
+  -- DATA_MUX : DATA_d <= data_in;
+  DATA_MUX : DATA_q <= data_in;
+
+  -- DATA_REGISTER : PROCESS (n_clk, rst) BEGIN
+  --   IF rising_edge(n_clk) THEN
+  --     DATA_q <= DATA_d;
+  --   END IF;
+
+  --   IF rst = '1' THEN
+  --     data_q <= (OTHERS => '0');
+  --   END IF;
+  -- END PROCESS;
 
   -- Program Counter
   PC_MUX : pc_in <= STD_LOGIC_VECTOR(unsigned(pch_q) & unsigned(pcl_q) + 1) WHEN u_operation.mux_pc = s_INCR ELSE
@@ -93,7 +88,7 @@ BEGIN
       INIT_VALUE => to_integer(PC_INIT(7 DOWNTO 0))
     )
     PORT MAP(
-      clk => clk,
+      clk => n_clk,
       rst => rst,
       d => pc_in(7 DOWNTO 0),
       q => PCL_q,
@@ -106,26 +101,45 @@ BEGIN
       INIT_VALUE => to_integer(PC_INIT(15 DOWNTO 8))
     )
     PORT MAP(
-      clk => clk,
+      clk => n_clk,
       rst => rst,
       d => pc_in(15 DOWNTO 8),
       q => PCH_q,
       ce => u_operation.pch_en
     );
 
-  -- Addressing
-  address <= abh & abl;
+  ADDR_MUX : address <= pch_q & pcl_q WHEN u_operation.mux_addr = s_PC ELSE
+  ABH_q & ABL_q WHEN u_operation.mux_addr = s_AB ELSE
+  (OTHERS => '0');
 
-  ABL_MUX : abl <= pcl_q WHEN u_operation.mux_abl = s_PCL ELSE
-  data_q WHEN u_operation.mux_abl = s_ADL ELSE
+  ABL_MUX : ABL_d <= DATA_q WHEN u_operation.mux_abl = s_DATA ELSE
   alu_res WHEN u_operation.mux_abl = s_ALU ELSE
   (OTHERS => '0');
 
-  ABH_MUX : abh <= pch_q WHEN u_operation.mux_abh = s_PCH
-ELSE
-  data_q WHEN u_operation.mux_abh = s_ADH ELSE
+  ABL_REGISTER : ENTITY work.bits_register GENERIC MAP (
+    WIDTH => 8
+    )
+    PORT MAP(
+      clk => n_clk,
+      rst => rst,
+      d => ABL_d,
+      q => ABL_q,
+      ce => u_operation.abl_en
+    );
+
+  ABH_MUX : ABH_d <= data_q WHEN u_operation.mux_abh = s_DATA ELSE
   (OTHERS => '0');
 
+  ABH_REGISTER : ENTITY work.bits_register GENERIC MAP (
+    WIDTH => 8
+    )
+    PORT MAP(
+      clk => n_clk,
+      rst => rst,
+      d => ABH_d,
+      q => ABH_q,
+      ce => u_operation.abl_en
+    );
   -- ALU Operand registers
   AI_MUX : AI_d <= ACC_q WHEN u_operation.mux_ai = s_ACC ELSE
   RGX_q WHEN u_operation.mux_ai = s_RGX ELSE
@@ -136,14 +150,14 @@ ELSE
       WIDTH => 8
     )
     PORT MAP(
-      clk => clk,
+      clk => n_clk,
       rst => rst,
       d => AI_d,
       q => AI_q,
       ce => u_operation.ai_en
     );
 
-  BI_MUX : BI_d <= DB WHEN u_operation.mux_bi = s_DB ELSE
+  BI_MUX : BI_d <= DATA_q WHEN u_operation.mux_bi = s_DATA ELSE
   (OTHERS => '0');
 
   BI_REGISTER : ENTITY work.bits_register
@@ -151,7 +165,7 @@ ELSE
       WIDTH => 8
     )
     PORT MAP(
-      clk => clk,
+      clk => n_clk,
       rst => rst,
       d => BI_d,
       q => BI_q,
@@ -167,7 +181,7 @@ ELSE
     INIT_VALUE => 1
     )
     PORT MAP(
-      clk => clk,
+      clk => n_clk,
       rst => rst,
       d => RGX_d,
       q => RGX_q,
@@ -182,7 +196,7 @@ ELSE
     WIDTH => 8
     )
     PORT MAP(
-      clk => clk,
+      clk => n_clk,
       rst => rst,
       d => ACC_d,
       q => ACC_q,
@@ -191,7 +205,7 @@ ELSE
 
   -- ALU
   ALU_inst : ENTITY work.alu PORT MAP (
-    clk => clk,
+    clk => n_clk,
     rst => rst,
     operation => u_operation.alu_op,
     op_ai => AI_q,
@@ -205,7 +219,7 @@ ELSE
     );
 
   STATUS_REGISTER : ENTITY work.status_register PORT MAP (
-    clk => clk,
+    clk => n_clk,
     rst => rst,
     d => status_d,
     q => status_q,

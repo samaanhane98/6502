@@ -41,9 +41,23 @@ END control_path;
 ARCHITECTURE behavioral OF control_path IS
   SIGNAL state, next_state : CPU_STATE := T0;
 
+  SIGNAL IR : STD_LOGIC_VECTOR(7 DOWNTO 0) := (OTHERS => '0');
+
   SIGNAL decInstruction : DECODED_INSTRUCTION;
 
 BEGIN
+
+  IR_FETCH : PROCESS (clk) BEGIN
+    IF rising_edge(clk) THEN
+      IF state = T0 THEN
+        IR <= instruction;
+      ELSE
+        REPORT to_string(decInstruction);
+      END IF;
+    END IF;
+  END PROCESS;
+
+  decInstruction <= decode(IR);
   PROCESS (clk, rst) BEGIN
     IF rising_edge(clk) THEN
       state <= next_state;
@@ -54,7 +68,7 @@ BEGIN
     END IF;
   END PROCESS;
 
-  STATE_MACHINE : PROCESS (state)
+  STATE_MACHINE : PROCESS (state, rst)
     VARIABLE u_op : MICRO_OPERATION;
 
   BEGIN
@@ -63,8 +77,7 @@ BEGIN
     CASE state IS
       WHEN T0 =>
         -- Setup Instruction Fetch
-        u_op.mux_abl := s_PCL;
-        u_op.mux_abh := s_PCH;
+        u_op.mux_addr := s_PC;
         u_op.wr_mem := READ_ENABLE;
 
         -- Update Program Counter
@@ -74,39 +87,44 @@ BEGIN
 
         next_state <= T1;
       WHEN T1 =>
-        decInstruction <= decode(instruction);
-
-        -- Store operand in instruction register
-        u_op.ir_en := '1';
+        u_op.mux_addr := s_PC;
 
         -- Update program counter
         u_op.pcl_en := '1';
         u_op.pch_en := '1';
+        u_op.mux_pc := s_INCR;
 
         next_state <= T2;
       WHEN T2 =>
-        REPORT to_string(decInstruction);
         IF decInstruction.instruction_type = ADC THEN
           CASE (decInstruction.addressing_mode) IS
             WHEN IMM =>
               u_op.mux_ai := s_ACC;
-              u_op.mux_bi := s_DB;
+              u_op.mux_bi := s_DATA;
 
               u_op.ai_en := '1';
               u_op.bi_en := '1';
 
             WHEN ZERO_PAGE =>
-              u_op.mux_abl := s_ADL;
+
+              u_op.mux_abl := s_DATA;
+              u_op.abl_en := '1';
               -- u_op.ir_en := '1';
 
             WHEN ZERO_PAGE_X =>
               u_op.mux_ai := s_RGX;
-              u_op.mux_bi := s_DB;
+              u_op.mux_bi := s_DATA;
 
               u_op.ai_en := '1';
               u_op.bi_en := '1';
 
             WHEN ABSOLUTE =>
+              u_op.mux_addr := s_PC;
+              u_op.mux_abl := s_DATA;
+
+              -- Update program counter
+              u_op.pcl_en := '1';
+              u_op.pch_en := '1';
 
             WHEN OTHERS =>
           END CASE;
@@ -132,7 +150,9 @@ BEGIN
               next_state <= T0;
             WHEN ZERO_PAGE =>
               u_op.mux_ai := s_ACC;
-              u_op.mux_bi := s_DB;
+
+              u_op.mux_addr := s_AB;
+              u_op.mux_bi := s_DATA;
 
               u_op.ai_en := '1';
               u_op.bi_en := '1';
@@ -142,6 +162,12 @@ BEGIN
               u_op.alu_op := AD;
               u_op.mux_abl := s_ALU;
               next_state <= T4;
+
+            WHEN ABSOLUTE =>
+              -- u_op.mux_abl := 
+              -- u_op.mux_abh := s_DATA;
+
+              -- next_state <= T4;
             WHEN OTHERS =>
           END CASE;
         END IF;
@@ -154,13 +180,22 @@ BEGIN
               u_op.acc_en := '1';
               next_state <= T0;
             WHEN ZERO_PAGE_X =>
-              u_op.mux_bi := s_DB;
+              u_op.mux_bi := s_DATA;
               u_op.mux_ai := s_ACC;
 
               u_op.ai_en := '1';
               u_op.bi_en := '1';
 
               next_state <= T5;
+
+            WHEN ABSOLUTE =>
+              -- u_op.mux_ai := s_ACC;
+              -- u_op.mux_bi := s_DATA;
+
+              -- u_op.ai_en := '1';
+              -- u_op.bi_en := '1';
+
+              -- next_state <= T5;
             WHEN OTHERS =>
           END CASE;
         END IF;
