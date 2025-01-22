@@ -175,41 +175,41 @@ BEGIN
   --     ce => u_operation.rgx_en
   --   );
 
-  -- -- Accumulator
-  -- ACC_MUX : ACC_d <= alu_res WHEN u_operation.mux_acc = s_ALU ELSE
-  -- (OTHERS => '0');
+  -- Accumulator
+  ACC_MUX : ACC_d <= alu_res WHEN u_operation.mux_acc = s_ALU ELSE
+  (OTHERS => '0');
 
-  -- ACC_REGISTER : ENTITY work.bits_register GENERIC MAP (
-  --   WIDTH => 8
-  --   )
-  --   PORT MAP(
-  --     clk => clk,
-  --     rst => rst,
-  --     d => ACC_d,
-  --     q => ACC_q,
-  --     ce => u_operation.acc_en
-  --   );
+  ACC_REGISTER : ENTITY work.bits_register GENERIC MAP (
+    WIDTH => 8
+    )
+    PORT MAP(
+      clk => clk,
+      rst => rst,
+      d => ACC_d,
+      q => ACC_q,
+      ce => u_operation.acc_en
+    );
 
-  -- -- ALU
-  -- ALU_inst : ENTITY work.alu PORT MAP (
-  --   clk => clk,
-  --   rst => rst,
-  --   operation => u_operation.alu_op,
-  --   op_ai => AI_q,
-  --   op_bi => BI_q,
-  --   carry => status_q(CARRY),
-  --   alu_res => alu_res,
-  --   carry_out => status_d(CARRY),
-  --   neg_out => status_d(NEGATIVE),
-  --   zero_out => status_d(ZERO),
-  --   overflow_out => status_d(OVERFLOW)
-  --   );
+  -- ALU
+  ALU_inst : ENTITY work.alu PORT MAP (
+    clk => clk,
+    rst => rst,
+    operation => u_operation.alu_op,
+    op_ai => AI_q,
+    op_bi => BI_q,
+    carry => status_q(CARRY),
+    alu_res => alu_res,
+    carry_out => status_d(CARRY),
+    neg_out => status_d(NEGATIVE),
+    zero_out => status_d(ZERO),
+    overflow_out => status_d(OVERFLOW)
+    );
 
-  -- STATUS_REGISTER : ENTITY work.status_register PORT MAP (
-  --   clk => clk,
-  --   rst => rst,
-  --   d => status_d,
-  --   q => status_q,
-  --   ce => u_operation.status_en
-  --   );
+  STATUS_REGISTER : ENTITY work.status_register PORT MAP (
+    clk => clk,
+    rst => rst,
+    d => status_d,
+    q => status_q,
+    ce => u_operation.status_en
+    );
 END behavioral;

@@ -45,11 +45,8 @@ ARCHITECTURE behavioral OF top IS
   SIGNAL rw : RW;
 
 BEGIN
-  PHI0 <= clk;
-  PHI2 <= NOT clk;
-
-  RW_OPERATION : PROCESS (PHI0) BEGIN
-    IF rising_edge(PHI0) THEN
+  RW_OPERATION : PROCESS (clk) BEGIN
+    IF rising_edge(clk) THEN
       CASE (rw) IS
         WHEN READ_ENABLE =>
           data_in <= memory(to_integer(unsigned(address)));

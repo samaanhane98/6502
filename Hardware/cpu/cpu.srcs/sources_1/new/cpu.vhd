@@ -59,7 +59,7 @@ BEGIN
 
   data_path_inst : ENTITY work.data_path
     PORT MAP(
-      clk => PHI2,
+      clk => PHI1,
       rst => rst,
       u_operation => u_operation,
       data_in => data_in,

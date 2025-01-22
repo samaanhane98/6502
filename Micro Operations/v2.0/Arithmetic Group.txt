@@ -7,26 +7,37 @@ States shared between different addressing modes:
 
         ALL
         ----
+            //////////// Original //////////// 
             T0: MAR <- PC ;  PC++                           # Fetch
             T1: MAR <- PC ; IR <- MEM[MAR] ; PC++;          # First Decode step, IR receives opcode     
+            
+            //////////// Sam //////////// 
+            T0: ADDR <- PC ;  PC++                           # Fetch
+            T1: ADDR <- PC ; IR <- MEM[MAR] ; PC++;          # First Decode step, IR receives opcode     
 
 Specific States:
             
         ADC
         ----
             - IMM: ADC #01 (69 01)                              # AC <- AC + 01 + c
-                T2: BI <- DATA; AI <- AC
+            //////////// Original //////////// 
+                T2: BI <- MEM[MAR]; AI <- AC
                 T3: AC <- AI + BI + c; wrn; wrz; wrc; wrv; 
+            
+            //////////// Sam //////////// 
+                T2: BI <- data_in; AI <- AC
+                T3: AC <- AI + BI + c; wrn; wrz; wrc; wrv; 
+
                 
             - Z-PAGE: ADC $33 (65 33)                           # AC <- AC + MEM[33h] + c
-                T2: ABL <- DATA;                      
-                T3: BI <- MEM[ABL]; AI <- AC  
+                T2: MAR <- MEM[MAR];                      
+                T3: BI <- MEM[MAR]; AI <- AC  
                 T4: AC <- AI + BI + c; wrn; wrz; wrc; wrv;
                  
             - Z-PAGE,X: adc $13 (75 13)                         # AC <- AC + MEM[13h+X] + c
-                T2: BI <- DATA; AI <- X
+                T2: BI <- MEM[MAR]; AI <- X
                 T3: ABL <- AI + BI;
-                T4: BI <- DATA; AI <- AC  
+                T4: BI <- MEM[ABH/ABL]; AI <- AC  
                 T5: AC <- AI + BI + c; wrn; wrz; wrc; wrv;
             
             - (IND,X): ADC ($36,X) (61 36)              
@@ -47,9 +58,9 @@ Specific States:
             
             - ABS: ADC $0001 (6d 01 00)                         # AC <- AC + MEM[0001h] + c
                 T2: ABL <- MEM[MAR]; MAR <- PC; PC++;
-                T3: ABH <- DATA
+                T3: ABH <- MEM[MAR]
                 T4: BI <- MEM[ABH/ABL]; AI <- AC 
-                T5: AC <- AI + BI + c; wrn; wrz; wrc; wrv;            
+                T5: AC <- AI + BI + c; wrn; wrz; wrc; wrv;             
             
             - ABS,X: ADC $12F0,X (7d F0 12)                     # AC <- AC + MEM[12F0h+X] + c
                 T2: BI <- MEM[MAR]; AI <- X; MAR <- PC; PC++;   # BI <- LOW ADDRESS BYTE

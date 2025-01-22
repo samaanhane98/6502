@@ -95,9 +95,53 @@ BEGIN
 
         next_state <= T2;
       WHEN T2 =>
-        u_op.mux_bi := s_DATA;
-        u_op.bi_en := '1';
+        IF decInstruction.instruction_type = ADC THEN
+          CASE (decInstruction.addressing_mode) IS
+            WHEN IMM =>
+              u_op.mux_ai := s_ACC;
+              u_op.ai_en := '1';
 
+              u_op.mux_bi := s_DATA;
+              u_op.bi_en := '1';
+            WHEN ZERO_PAGE =>
+            WHEN ZERO_PAGE_X =>
+            WHEN ABSOLUTE =>
+
+            WHEN OTHERS =>
+          END CASE;
+          next_state <= T3;
+
+        ELSE
+          next_state <= T0;
+        END IF;
+
+      WHEN T3 =>
+        IF decInstruction.instruction_type = ADC THEN
+          u_op.alu_op := ADC;
+
+          CASE (decInstruction.addressing_mode) IS
+            WHEN IMM =>
+              -- Enable status registers
+              u_op.status_en(CARRY) := '1';
+              u_op.status_en(ZERO) := '1';
+              u_op.status_en(OVERFLOW) := '1';
+              u_op.status_en(NEGATIVE) := '1';
+
+              -- Store result in accumulator
+              u_op.mux_acc := s_ALU;
+              u_op.acc_en := '1';
+              next_state <= T0;
+
+            WHEN ZERO_PAGE =>
+            WHEN ZERO_PAGE_X =>
+            WHEN ABSOLUTE =>
+
+            WHEN OTHERS =>
+          END CASE;
+
+        ELSE
+          next_state <= T0;
+        END IF;
       WHEN OTHERS =>
 
     END CASE;
