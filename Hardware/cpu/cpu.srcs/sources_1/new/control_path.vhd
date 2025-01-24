@@ -90,14 +90,27 @@ BEGIN
             WHEN IMM =>
               u_op.mux_ai := s_ACC;
               u_op.ai_en := '1';
-              u_op.mux_bi := s_DATA;
+              u_op.mux_bi := s_DB;
               u_op.bi_en := '1';
             WHEN ZERO_PAGE =>
               u_op.mux_adl := s_DATA;
               u_op.mux_adh := s_ZERO;
 
             WHEN ZERO_PAGE_X =>
+              u_op.mux_ai := s_RGX;
+              u_op.ai_en := '1';
+              u_op.mux_bi := s_DB;
+              u_op.bi_en := '1';
+
             WHEN ABSOLUTE =>
+              address_pc(u_op);
+              u_op.mux_adl := s_DATA;
+              u_op.abl_en := '1';
+
+              -- u_op.mux_ai := s_RGX;
+              -- u_op.ai_en := '1';
+              -- u_op.mux_bi := s_DB;
+              -- u_op.bi_en := '1';
 
             WHEN OTHERS =>
           END CASE;
@@ -118,11 +131,17 @@ BEGIN
             WHEN ZERO_PAGE =>
               u_op.mux_ai := s_ACC;
               u_op.ai_en := '1';
-              u_op.mux_bi := s_DATA;
+              u_op.mux_bi := s_DB;
               u_op.bi_en := '1';
 
               next_state <= T4;
             WHEN ZERO_PAGE_X =>
+              -- u_op.mux_addr := s_AD;
+              u_op.alu_op := AD;
+              u_op.mux_adl := s_ALU;
+              u_op.abl_en := '1';
+
+              next_state <= T4;
             WHEN ABSOLUTE =>
 
             WHEN OTHERS =>
@@ -138,9 +157,20 @@ BEGIN
               store_adc(u_op);
 
               next_state <= T0;
+            WHEN ZERO_PAGE_X =>
+              u_op.mux_ai := s_ACC;
+              u_op.ai_en := '1';
+              u_op.mux_bi := s_DB;
+              u_op.bi_en := '1';
+
+              next_state <= T5;
             WHEN OTHERS =>
           END CASE;
         END IF;
+      WHEN T5 =>
+        store_adc(u_op);
+
+        next_state <= T0;
       WHEN OTHERS =>
 
     END CASE;

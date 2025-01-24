@@ -67,8 +67,9 @@ BEGIN
     CASE (operation) IS
       WHEN ADC =>
         tmp_result <= "0" & STD_LOGIC_VECTOR(unsigned(op_ai) + unsigned(op_bi) + carry);
-        -- WHEN AD =>
-        --   tmp_result <= "0" & STD_LOGIC_VECTOR(unsigned(op_ai) + unsigned(op_bi));
+      WHEN AD =>
+        tmp_result <= "0" & STD_LOGIC_VECTOR(unsigned(op_ai) + unsigned(op_bi));
+      WHEN OTHERS =>
     END CASE;
   END PROCESS;
 END behavioral;

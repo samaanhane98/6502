@@ -68,15 +68,15 @@ PACKAGE cpu_pkg IS
 
   -- Micro operations
   TYPE RW IS (READ_ENABLE, WRITE_ENABLE);
-  TYPE ALU_OPERATION IS (ADC);
+  TYPE ALU_OPERATION IS (ADC, AD);
 
   TYPE mux_pc_t IS (s_INCR);
-  TYPE mux_addr_t IS (s_AB, s_MA);
-  TYPE mux_adl_t IS (s_PC, s_DATA);
+  TYPE mux_addr_t IS (s_AD, s_AB);
+  TYPE mux_adl_t IS (s_PC, s_ALU, s_DATA);
   TYPE mux_adh_t IS (s_PC, s_ZERO);
-  TYPE mux_ai_t IS (s_ACC);
-  TYPE mux_bi_t IS (s_DATA);
-  TYPE mux_acc_t IS (s_ALU);
+  TYPE mux_ai_t IS (s_ACC, s_RGX);
+  TYPE mux_bi_t IS (s_DB);
+  TYPE mux_acc_t IS (s_SB);
   TYPE MICRO_OPERATION IS RECORD
     wr_mem : RW; -- WRITE/READ operation
     alu_op : ALU_OPERATION;
@@ -84,9 +84,12 @@ PACKAGE cpu_pkg IS
     -- Enables
     pcl_en : STD_LOGIC;
     pch_en : STD_LOGIC;
+    abl_en : STD_LOGIC;
+    abh_en : STD_LOGIC;
     ai_en : STD_LOGIC;
     bi_en : STD_LOGIC;
     acc_en : STD_LOGIC;
+    rgx_en : STD_LOGIC;
     status_en : STD_LOGIC_VECTOR(7 DOWNTO 0);
 
     -- MUX
@@ -112,17 +115,20 @@ PACKAGE BODY cpu_pkg IS
     u_op.alu_op := ADC;
     u_op.pcl_en := '0';
     u_op.pch_en := '0';
+    u_op.abl_en := '0';
+    u_op.abh_en := '0';
     u_op.ai_en := '0';
     u_op.bi_en := '0';
     u_op.acc_en := '0';
+    u_op.rgx_en := '0';
     u_op.status_en := (OTHERS => '0');
     u_op.mux_pc := S_INCR;
-    u_op.mux_addr := s_AB;
+    u_op.mux_addr := s_AD;
     u_op.mux_adl := s_PC;
     u_op.mux_adh := s_PC;
     u_op.mux_ai := s_ACC;
-    u_op.mux_bi := s_DATA;
-    u_op.mux_acc := s_ALU;
+    u_op.mux_bi := s_DB;
+    u_op.mux_acc := s_SB;
   END PROCEDURE;
 
   PROCEDURE increment_pc(VARIABLE u_op : INOUT MICRO_OPERATION) IS
@@ -134,14 +140,14 @@ PACKAGE BODY cpu_pkg IS
 
   PROCEDURE address_pc(VARIABLE u_op : INOUT MICRO_OPERATION) IS
   BEGIN
-    u_op.mux_addr := s_AB;
+    u_op.mux_addr := s_AD;
     u_op.mux_adl := s_PC;
     u_op.mux_adh := s_PC;
   END PROCEDURE;
 
   PROCEDURE store_adc(VARIABLE u_op : INOUT MICRO_OPERATION) IS
   BEGIN
-    u_op.mux_acc := s_ALU;
+    u_op.mux_acc := s_SB;
     u_op.acc_en := '1';
     u_op.status_en(CARRY) := '1';
     u_op.status_en(ZERO) := '1';
