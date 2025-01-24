@@ -46,12 +46,15 @@ END cpu;
 ARCHITECTURE behavioral OF cpu IS
   SIGNAL u_operation : MICRO_OPERATION;
 
+  SIGNAL n_clk : STD_LOGIC;
 BEGIN
   rw_out <= u_operation.wr_mem;
 
+  n_clk <= NOT clk;
+
   data_path_inst : ENTITY work.data_path
     PORT MAP(
-      clk => clk,
+      clk => n_clk,
       rst => rst,
       u_operation => u_operation,
       data_in => data_in,

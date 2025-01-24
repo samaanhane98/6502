@@ -47,12 +47,14 @@ ARCHITECTURE behavioral OF data_path IS
   -- REGISTERS
   SIGNAL AI_q, AI_d, BI_q, BI_d, ACC_q, ACC_d, RGX_q, RGX_d, ABL_q, ABH_q : STD_LOGIC_VECTOR(7 DOWNTO 0);
 
+  SIGNAL MA_q, MA_d : STD_LOGIC_VECTOR(15 DOWNTO 0);
+
   SIGNAL carry_in : INTEGER := 0;
   SIGNAL alu_res : STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL status_q, status_d : STATUS;
 BEGIN
   -- Addressing
-  ADDRESS_MUX : address <= ADH & ADL WHEN u_operation.mux_addr = s_AD ELSE
+  ADDRESS_MUX : address <= MA_q WHEN u_operation.mux_addr = s_MA ELSE
   ABH_q & ABL_q WHEN u_operation.mux_addr = s_AB;
 
   -- Buses
@@ -64,6 +66,7 @@ BEGIN
   data_in WHEN u_operation.mux_adl = s_DATA;
 
   ADH_MUX : ADH <= PCH_q WHEN u_operation.mux_adh = s_PC ELSE
+  data_in WHEN u_operation.mux_adl = s_DATA ELSE
   (OTHERS => '0');
 
   -- ALU
@@ -82,6 +85,22 @@ BEGIN
     );
 
   -- REGISTERS
+  -- TODO: mistake here, PC install of ad directly
+  MA_MUX : MA_d <= ADH & ADL WHEN u_operation.mux_ma = s_AD ELSE
+  x"00" & data_in WHEN u_operation.mux_ma = s_DATA;
+
+  MA_REGISTER : ENTITY work.bits_register
+    GENERIC MAP(
+      WIDTH => 16
+    )
+    PORT MAP(
+      clk => clk,
+      rst => rst,
+      d => MA_d,
+      q => MA_q,
+      ce => u_operation.ma_en
+    );
+
   PC_MUX : PC_in <= STD_LOGIC_VECTOR(unsigned(pch_q) & unsigned(pcl_q) + 1) WHEN u_operation.mux_pc = s_INCR ELSE
   (OTHERS => '0');
   PCL_REGISTER : ENTITY work.bits_register
@@ -131,20 +150,6 @@ BEGIN
       q => ABH_q,
       ce => u_operation.abl_en
     );
-
-  -- MA_MUX : MA_d <= x"00" & data_in WHEN u_operation.mux_ma = s_DATA;
-
-  -- MA_REGISTER : ENTITY work.bits_register
-  --   GENERIC MAP(
-  --     WIDTH => 16
-  --   )
-  --   PORT MAP(
-  --     clk => clk,
-  --     rst => rst,
-  --     d => MA_d,
-  --     q => MA_q,
-  --     ce => u_operation.ma_en
-  --   );
 
   AI_MUX : AI_d <= ACC_q WHEN u_operation.mux_ai = s_ACC ELSE
   RGX_q WHEN u_operation.mux_ai = s_RGX;

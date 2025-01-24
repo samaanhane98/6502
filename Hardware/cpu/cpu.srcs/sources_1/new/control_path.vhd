@@ -66,6 +66,8 @@ BEGIN
     END IF;
   END PROCESS;
 
+  -- ! Note to self: every state change requires specifying the address
+  -- ! The data will be available in the next cycle this way
   STATE_MACHINE : PROCESS (state, rst)
     VARIABLE u_op : MICRO_OPERATION;
 
@@ -74,13 +76,21 @@ BEGIN
 
     CASE state IS
       WHEN T0 =>
-        increment_pc(u_op);
+        ------- Addressing ------- 
         address_pc(u_op);
+        -------------------------- 
 
+        increment_pc(u_op);
+
+        u_op.ma_en := '1';
         next_state <= T1;
       WHEN T1 =>
-        increment_pc(u_op);
+        ------- Addressing ------- 
         address_pc(u_op);
+        -------------------------- 
+
+        increment_pc(u_op);
+        u_op.ma_en := '1';
 
         next_state <= T2;
       WHEN T2 =>
@@ -93,8 +103,14 @@ BEGIN
               u_op.mux_bi := s_DB;
               u_op.bi_en := '1';
             WHEN ZERO_PAGE =>
+              ------- Addressing ------- 
+              u_op.mux_addr := s_MA;
               u_op.mux_adl := s_DATA;
               u_op.mux_adh := s_ZERO;
+              -------------------------- 
+
+              u_op.mux_ma := s_AD;
+              u_op.ma_en := '1';
 
             WHEN ZERO_PAGE_X =>
               u_op.mux_ai := s_RGX;
@@ -103,14 +119,14 @@ BEGIN
               u_op.bi_en := '1';
 
             WHEN ABSOLUTE =>
+              ------- Addressing ------- 
               address_pc(u_op);
+              -------------------------- 
+              u_op.ma_en := '1';
+
+              -- TODO: mistake here, adl should be pc but is overwritten
               u_op.mux_adl := s_DATA;
               u_op.abl_en := '1';
-
-              -- u_op.mux_ai := s_RGX;
-              -- u_op.ai_en := '1';
-              -- u_op.mux_bi := s_DB;
-              -- u_op.bi_en := '1';
 
             WHEN OTHERS =>
           END CASE;
@@ -136,14 +152,22 @@ BEGIN
 
               next_state <= T4;
             WHEN ZERO_PAGE_X =>
-              -- u_op.mux_addr := s_AD;
+              ------- Addressing ------- 
+              u_op.mux_addr := s_AB;
+              -------------------------- 
+
               u_op.alu_op := AD;
               u_op.mux_adl := s_ALU;
               u_op.abl_en := '1';
-
               next_state <= T4;
             WHEN ABSOLUTE =>
+              ------- Addressing ------- 
+              u_op.mux_addr := s_AB;
+              -------------------------- 
+              u_op.mux_adh := s_DATA;
+              u_op.abh_en := '1';
 
+              next_state <= T4;
             WHEN OTHERS =>
           END CASE;
 
@@ -164,13 +188,30 @@ BEGIN
               u_op.bi_en := '1';
 
               next_state <= T5;
+
+            WHEN ABSOLUTE =>
+              u_op.mux_ai := s_ACC;
+              u_op.ai_en := '1';
+              u_op.mux_bi := s_DB;
+              u_op.bi_en := '1';
+
+              next_state <= T5;
             WHEN OTHERS =>
           END CASE;
         END IF;
       WHEN T5 =>
-        store_adc(u_op);
-
-        next_state <= T0;
+        IF decInstruction.instruction_type = ADC THEN
+          u_op.alu_op := ADC;
+          CASE (decInstruction.addressing_mode) IS
+            WHEN ZERO_PAGE_X =>
+              store_adc(u_op);
+              next_state <= T0;
+            WHEN ABSOLUTE =>
+              store_adc(u_op);
+              next_state <= T0;
+            WHEN OTHERS =>
+          END CASE;
+        END IF;
       WHEN OTHERS =>
 
     END CASE;

@@ -71,9 +71,10 @@ PACKAGE cpu_pkg IS
   TYPE ALU_OPERATION IS (ADC, AD);
 
   TYPE mux_pc_t IS (s_INCR);
-  TYPE mux_addr_t IS (s_AD, s_AB);
+  TYPE mux_addr_t IS (s_MA, s_AB);
+  TYPE mux_ma_t IS (s_AD, s_DATA);
   TYPE mux_adl_t IS (s_PC, s_ALU, s_DATA);
-  TYPE mux_adh_t IS (s_PC, s_ZERO);
+  TYPE mux_adh_t IS (s_PC, s_DATA, s_ZERO);
   TYPE mux_ai_t IS (s_ACC, s_RGX);
   TYPE mux_bi_t IS (s_DB);
   TYPE mux_acc_t IS (s_SB);
@@ -84,6 +85,7 @@ PACKAGE cpu_pkg IS
     -- Enables
     pcl_en : STD_LOGIC;
     pch_en : STD_LOGIC;
+    ma_en : STD_LOGIC;
     abl_en : STD_LOGIC;
     abh_en : STD_LOGIC;
     ai_en : STD_LOGIC;
@@ -94,6 +96,7 @@ PACKAGE cpu_pkg IS
 
     -- MUX
     mux_pc : mux_pc_t;
+    mux_ma : mux_ma_t;
     mux_addr : mux_addr_t;
     mux_adl : mux_adl_t;
     mux_adh : mux_adh_t;
@@ -105,6 +108,8 @@ PACKAGE cpu_pkg IS
   PROCEDURE reset(VARIABLE u_op : INOUT MICRO_OPERATION);
   PROCEDURE increment_pc(VARIABLE u_op : INOUT MICRO_OPERATION);
   PROCEDURE address_pc(VARIABLE u_op : INOUT MICRO_OPERATION);
+  -- PROCEDURE address_data(VARIABLE u_op : INOUT MICRO_OPERATION);
+  -- PROCEDURE address_ab(VARIABLE u_op : INOUT MICRO_OPERATION);
   PROCEDURE store_adc(VARIABLE u_op : INOUT MICRO_OPERATION);
 END PACKAGE;
 
@@ -115,6 +120,7 @@ PACKAGE BODY cpu_pkg IS
     u_op.alu_op := ADC;
     u_op.pcl_en := '0';
     u_op.pch_en := '0';
+    u_op.ma_en := '0';
     u_op.abl_en := '0';
     u_op.abh_en := '0';
     u_op.ai_en := '0';
@@ -123,7 +129,8 @@ PACKAGE BODY cpu_pkg IS
     u_op.rgx_en := '0';
     u_op.status_en := (OTHERS => '0');
     u_op.mux_pc := S_INCR;
-    u_op.mux_addr := s_AD;
+    u_op.mux_ma := s_AD;
+    u_op.mux_addr := s_MA;
     u_op.mux_adl := s_PC;
     u_op.mux_adh := s_PC;
     u_op.mux_ai := s_ACC;
@@ -140,10 +147,24 @@ PACKAGE BODY cpu_pkg IS
 
   PROCEDURE address_pc(VARIABLE u_op : INOUT MICRO_OPERATION) IS
   BEGIN
-    u_op.mux_addr := s_AD;
+    u_op.mux_addr := s_MA;
     u_op.mux_adl := s_PC;
     u_op.mux_adh := s_PC;
   END PROCEDURE;
+
+  -- PROCEDURE address_data(VARIABLE u_op : INOUT MICRO_OPERATION) IS
+  -- BEGIN
+  --   u_op.mux_addr := s_MA;
+  --   u_op.mux_adl := s_DATA;
+  --   u_op.mux_adh := s_ZERO;
+  -- END PROCEDURE;
+
+  -- PROCEDURE address_ab(VARIABLE u_op : INOUT MICRO_OPERATION) IS
+  -- BEGIN
+  --   u_op.mux_addr := s_AB;
+  --   u_op.mux_adl := s_DATA;
+  --   u_op.mux_adh := s_ZERO;
+  -- END PROCEDURE;
 
   PROCEDURE store_adc(VARIABLE u_op : INOUT MICRO_OPERATION) IS
   BEGIN
