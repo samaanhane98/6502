@@ -41,7 +41,6 @@ END status_register;
 ARCHITECTURE behavioral OF status_register IS
 
 BEGIN
-
   PROCESS (clk, rst)
   BEGIN
     IF rising_edge(clk) THEN

@@ -38,35 +38,46 @@ ENTITY data_path IS
 END data_path;
 
 ARCHITECTURE behavioral OF data_path IS
+  SIGNAL PC_in : STD_LOGIC_VECTOR(15 DOWNTO 0);
+  SIGNAL PCL_q, PCH_q : STD_LOGIC_VECTOR(7 DOWNTO 0);
 
-  SIGNAL status_d, status_q : STATUS := (OTHERS => '0');
+  -- BUSSES
+  SIGNAL ADL, ADH, DB : STD_LOGIC_VECTOR(7 DOWNTO 0);
 
-  -- Program counter registers
-  SIGNAL pcl_q : PCL := (OTHERS => '0');
-  SIGNAL pch_q : PCH := (OTHERS => '0');
-  SIGNAL pc_in : PC := (OTHERS => '0');
+  -- REGISTERS
+  SIGNAL AI_q, AI_d, BI_q, BI_d, ACC_q, ACC_d : STD_LOGIC_VECTOR(7 DOWNTO 0);
 
-  -- ALU registers
-  SIGNAL AI_d, BI_d, AI_q, BI_q : STD_LOGIC_VECTOR(7 DOWNTO 0);
-
-  -- Accumulator
-  SIGNAL ACC_d, ACC_q : ACC := (OTHERS => '0');
-
-  -- Adder hold register
+  SIGNAL carry_in : INTEGER := 0;
   SIGNAL alu_res : STD_LOGIC_VECTOR(7 DOWNTO 0);
-
-  -- X & Y registers
-  SIGNAL RGX_d, RGX_q : RGX := (OTHERS => '0');
-
-  -- Address registers
-  SIGNAL MA_d, MA_q : STD_LOGIC_VECTOR(15 DOWNTO 0) := (OTHERS => '0');
-  SIGNAL ADL, ABL_q : STD_LOGIC_VECTOR(7 DOWNTO 0) := (OTHERS => '0');
-  SIGNAL ADH, ABH_q : STD_LOGIC_VECTOR(7 DOWNTO 0) := (OTHERS => '0');
+  SIGNAL status_q, status_d : STATUS;
 BEGIN
-  -- Program Counter
-  PC_MUX : pc_in <= STD_LOGIC_VECTOR(unsigned(pch_q) & unsigned(pcl_q) + 1) WHEN u_operation.mux_pc = s_INCR ELSE
+  -- Addressing
+  ADDRESS_MUX : address <= ADH & ADL WHEN u_operation.mux_addr = s_AB;
+
+  ADL_MUX : ADL <= PCL_q WHEN u_operation.mux_adl = s_PC ELSE
+  data_in WHEN u_operation.mux_adl = s_DATA;
+
+  ADH_MUX : ADH <= PCH_q WHEN u_operation.mux_adh = s_PC ELSE
   (OTHERS => '0');
 
+  -- ALU
+  ALU_inst : ENTITY work.alu PORT MAP (
+    clk => clk,
+    rst => rst,
+    operation => u_operation.alu_op,
+    op_ai => AI_q,
+    op_bi => BI_q,
+    carry => carry_in,
+    alu_res => alu_res,
+    carry_out => status_d(CARRY),
+    neg_out => status_d(NEGATIVE),
+    zero_out => status_d(ZERO),
+    overflow_out => status_d(OVERFLOW)
+    );
+
+  -- REGISTERS
+  PC_MUX : PC_in <= STD_LOGIC_VECTOR(unsigned(pch_q) & unsigned(pcl_q) + 1) WHEN u_operation.mux_pc = s_INCR ELSE
+  (OTHERS => '0');
   PCL_REGISTER : ENTITY work.bits_register
     GENERIC MAP(
       WIDTH => 8,
@@ -93,61 +104,21 @@ BEGIN
       ce => u_operation.pch_en
     );
 
-  -- ADDRESSING
-  ADDR_MUX : address <= MA_q WHEN u_operation.mux_addr = s_MA ELSE
-  ABH_q & ABL_q WHEN u_operation.mux_addr = s_AB ELSE
-  (OTHERS => '0');
+  -- MA_MUX : MA_d <= x"00" & data_in WHEN u_operation.mux_ma = s_DATA;
 
-  MA_MUX : MA_d <= x"00" & data_in WHEN u_operation.mux_ma = s_DATA ELSE
-  pch_q & pcl_q WHEN u_operation.mux_ma = s_PC;
+  -- MA_REGISTER : ENTITY work.bits_register
+  --   GENERIC MAP(
+  --     WIDTH => 16
+  --   )
+  --   PORT MAP(
+  --     clk => clk,
+  --     rst => rst,
+  --     d => MA_d,
+  --     q => MA_q,
+  --     ce => u_operation.ma_en
+  --   );
 
-  -- ! This register is not present in the actual processor but used so latches are not required
-  MA_REGISTER : ENTITY work.bits_register
-    GENERIC MAP(
-      WIDTH => 16
-    )
-    PORT MAP(
-      clk => clk,
-      rst => rst,
-      d => MA_d,
-      q => MA_q,
-      ce => u_operation.ma_en
-    );
-
-  ADL_MUX : ADL <= data_in WHEN u_operation.mux_adl = s_DATA ELSE
-  alu_res WHEN u_operation.mux_adl = s_ALU ELSE
-  PCL_q WHEN u_operation.mux_adl = s_PC;
-  -- (OTHERS => '0');
-
-  ABL_REGISTER : ENTITY work.bits_register GENERIC MAP (
-    WIDTH => 8
-    )
-    PORT MAP(
-      clk => clk,
-      rst => rst,
-      d => ADL,
-      q => ABL_q,
-      ce => u_operation.abl_en
-    );
-
-  ADH_MUX : ADH <= data_in WHEN u_operation.mux_adh = s_DATA ELSE
-  (OTHERS => '0');
-
-  ABH_REGISTER : ENTITY work.bits_register GENERIC MAP (
-    WIDTH => 8
-    )
-    PORT MAP(
-      clk => clk,
-      rst => rst,
-      d => ADH,
-      q => ABH_q,
-      ce => u_operation.abl_en
-    );
-
-  -- ALU Operand registers
-  AI_MUX : AI_d <= ACC_q WHEN u_operation.mux_ai = s_ACC ELSE
-  RGX_q WHEN u_operation.mux_ai = s_RGX ELSE
-  (OTHERS => '0');
+  AI_MUX : AI_d <= ACC_q WHEN u_operation.mux_ai = s_ACC;
 
   AI_REGISTER : ENTITY work.bits_register
     GENERIC MAP(
@@ -176,25 +147,7 @@ BEGIN
       ce => u_operation.bi_en
     );
 
-  -- -- X & Y registers
-  -- RGX_MUX : RGX_d <= alu_res WHEN u_operation.mux_rgx = s_ALU ELSE
-  -- (OTHERS => '0');
-
-  -- X_REGISTER : ENTITY work.bits_register GENERIC MAP (
-  --   WIDTH => 8,
-  --   INIT_VALUE => 1
-  --   )
-  --   PORT MAP(
-  --     clk => clk,
-  --     rst => rst,
-  --     d => RGX_d,
-  --     q => RGX_q,
-  --     ce => u_operation.rgx_en
-  --   );
-
-  -- Accumulator
-  ACC_MUX : ACC_d <= alu_res WHEN u_operation.mux_acc = s_ALU ELSE
-  (OTHERS => '0');
+  ACC_MUX : ACC_d <= alu_res WHEN u_operation.mux_acc = s_ALU;
 
   ACC_REGISTER : ENTITY work.bits_register GENERIC MAP (
     WIDTH => 8
@@ -206,22 +159,6 @@ BEGIN
       q => ACC_q,
       ce => u_operation.acc_en
     );
-
-  -- ALU
-  ALU_inst : ENTITY work.alu PORT MAP (
-    clk => clk,
-    rst => rst,
-    operation => u_operation.alu_op,
-    op_ai => AI_q,
-    op_bi => BI_q,
-    carry => status_q(CARRY),
-    alu_res => alu_res,
-    carry_out => status_d(CARRY),
-    neg_out => status_d(NEGATIVE),
-    zero_out => status_d(ZERO),
-    overflow_out => status_d(OVERFLOW)
-    );
-
   STATUS_REGISTER : ENTITY work.status_register PORT MAP (
     clk => clk,
     rst => rst,
@@ -230,3 +167,56 @@ BEGIN
     ce => u_operation.status_en
     );
 END behavioral;
+
+-- -- ADDRESSING
+-- ADDR_MUX : address <= MA_q WHEN u_operation.mux_addr = s_MA ELSE
+-- ABH_q & ABL_q WHEN u_operation.mux_addr = s_AB ELSE
+-- (OTHERS => '0');
+
+-- ADL_MUX : ADL <= data_in WHEN u_operation.mux_adl = s_DATA ELSE
+-- alu_res WHEN u_operation.mux_adl = s_ALU ELSE
+-- PCL_q WHEN u_operation.mux_adl = s_PC;
+-- -- (OTHERS => '0');
+
+-- ABL_REGISTER : ENTITY work.bits_register GENERIC MAP (
+--   WIDTH => 8
+--   )
+--   PORT MAP(
+--     clk => clk,
+--     rst => rst,
+--     d => ADL,
+--     q => ABL_q,
+--     ce => u_operation.abl_en
+--   );
+
+-- ADH_MUX : ADH <= data_in WHEN u_operation.mux_adh = s_DATA ELSE
+-- (OTHERS => '0');
+
+-- ABH_REGISTER : ENTITY work.bits_register GENERIC MAP (
+--   WIDTH => 8
+--   )
+--   PORT MAP(
+--     clk => clk,
+--     rst => rst,
+--     d => ADH,
+--     q => ABH_q,
+--     ce => u_operation.abl_en
+--   );
+
+-- -- ALU Operand registers
+
+-- -- -- X & Y registers
+-- -- RGX_MUX : RGX_d <= alu_res WHEN u_operation.mux_rgx = s_ALU ELSE
+-- -- (OTHERS => '0');
+
+-- -- X_REGISTER : ENTITY work.bits_register GENERIC MAP (
+-- --   WIDTH => 8,
+-- --   INIT_VALUE => 1
+-- --   )
+-- --   PORT MAP(
+-- --     clk => clk,
+-- --     rst => rst,
+-- --     d => RGX_d,
+-- --     q => RGX_q,
+-- --     ce => u_operation.rgx_en
+-- --   );

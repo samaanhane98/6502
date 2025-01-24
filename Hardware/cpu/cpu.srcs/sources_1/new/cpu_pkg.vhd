@@ -33,26 +33,6 @@ PACKAGE cpu_pkg IS
   -- Memory 
   TYPE MEMORY IS ARRAY (INTEGER RANGE <>) OF STD_LOGIC_VECTOR(7 DOWNTO 0);
 
-  -- Address Registers
-  SUBTYPE ABL IS STD_LOGIC_VECTOR(7 DOWNTO 0);
-  SUBTYPE ABH IS STD_LOGIC_VECTOR(15 DOWNTO 8);
-
-  -- Program Counter Registers
-  SUBTYPE PC IS STD_LOGIC_VECTOR(15 DOWNTO 0);
-  SUBTYPE PCH IS STD_LOGIC_VECTOR(15 DOWNTO 8);
-  SUBTYPE PCL IS STD_LOGIC_VECTOR(7 DOWNTO 0);
-
-  -- Internal Registers
-  SUBTYPE SP IS STD_LOGIC_VECTOR(7 DOWNTO 0);
-  SUBTYPE ACC IS STD_LOGIC_VECTOR(7 DOWNTO 0);
-  SUBTYPE RGX IS STD_LOGIC_VECTOR(7 DOWNTO 0);
-  SUBTYPE RGY IS STD_LOGIC_VECTOR(7 DOWNTO 0);
-
-  -- Busses
-  SUBTYPE SB IS STD_LOGIC_VECTOR(7 DOWNTO 0); -- Status bus
-  SUBTYPE ADH IS STD_LOGIC_VECTOR(15 DOWNTO 8); -- Address Data High bus
-  SUBTYPE ADL IS STD_LOGIC_VECTOR(7 DOWNTO 0); -- Address Data Low bus
-
   -- Status type and indices
   TYPE STATUS IS ARRAY(7 DOWNTO 0) OF STD_LOGIC;
   CONSTANT CARRY : INTEGER := 0;
@@ -88,84 +68,85 @@ PACKAGE cpu_pkg IS
 
   -- Micro operations
   TYPE RW IS (READ_ENABLE, WRITE_ENABLE);
-  TYPE ALU_OPERATION IS (ADC, AD);
+  TYPE ALU_OPERATION IS (ADC);
 
-  TYPE mux_addr_t IS (s_MA, s_AB);
-  TYPE mux_ma_t IS (s_PC, s_DATA);
-  TYPE mux_adl_t IS (s_PC, s_ALU, s_DATA);
-  TYPE mux_adh_t IS (s_ZERO, s_DATA);
-  TYPE mux_ai_t IS (s_ACC, s_RGX);
-  TYPE mux_bi_t IS (s_DATA); -- Is this the proper name?
   TYPE mux_pc_t IS (s_INCR);
-  TYPE mux_rgx_t IS (s_ALU);
+  TYPE mux_addr_t IS (s_AB, s_MA);
+  TYPE mux_adl_t IS (s_PC, s_DATA);
+  TYPE mux_adh_t IS (s_PC, s_ZERO);
+  TYPE mux_ai_t IS (s_ACC);
+  TYPE mux_bi_t IS (s_DATA);
   TYPE mux_acc_t IS (s_ALU);
-
   TYPE MICRO_OPERATION IS RECORD
     wr_mem : RW; -- WRITE/READ operation
+    alu_op : ALU_OPERATION;
 
-    -- ENABLES
-    pcl_en : STD_LOGIC; -- PC Low register enable
-    pch_en : STD_LOGIC; -- PC Low register enable
-    ma_en : STD_LOGIC;
-    abl_en : STD_LOGIC; -- Address bus low register enable
-    abh_en : STD_LOGIC; -- Address bus low register enable
-    ai_en : STD_LOGIC; -- A Input register enable
-    bi_en : STD_LOGIC; -- B Input register enable
-    rgx_en : STD_LOGIC; -- X index register enable
-    rgy_en : STD_LOGIC; -- X index register enable
-
+    -- Enables
+    pcl_en : STD_LOGIC;
+    pch_en : STD_LOGIC;
+    ai_en : STD_LOGIC;
+    bi_en : STD_LOGIC;
+    acc_en : STD_LOGIC;
     status_en : STD_LOGIC_VECTOR(7 DOWNTO 0);
 
     -- MUX
+    mux_pc : mux_pc_t;
     mux_addr : mux_addr_t;
-    mux_ma : mux_ma_t;
-    mux_adl : mux_adl_t; -- MUX for address bus low
-    mux_adh : mux_adh_t; -- MUX for address bus high
-    mux_ai : mux_ai_t; -- MUX for A input register
-    mux_bi : mux_bi_t; -- MUX for B input register
-    mux_pc : mux_pc_t; -- MUX for program counter
-    mux_dl : STD_LOGIC;
-    mux_rgx : mux_rgx_t;
-
-    -- Accumulator
-    acc_en : STD_LOGIC;
+    mux_adl : mux_adl_t;
+    mux_adh : mux_adh_t;
+    mux_ai : mux_ai_t;
+    mux_bi : mux_bi_t;
     mux_acc : mux_acc_t;
-
-    -- ALU
-    alu_op : ALU_OPERATION;
-
   END RECORD MICRO_OPERATION;
 
   PROCEDURE reset(VARIABLE u_op : INOUT MICRO_OPERATION);
+  PROCEDURE increment_pc(VARIABLE u_op : INOUT MICRO_OPERATION);
+  PROCEDURE address_pc(VARIABLE u_op : INOUT MICRO_OPERATION);
+  PROCEDURE store_adc(VARIABLE u_op : INOUT MICRO_OPERATION);
 END PACKAGE;
 
 PACKAGE BODY cpu_pkg IS
   PROCEDURE reset (VARIABLE u_op : INOUT MICRO_OPERATION) IS
   BEGIN
+    u_op.wr_mem := READ_ENABLE;
+    u_op.alu_op := ADC;
     u_op.pcl_en := '0';
     u_op.pch_en := '0';
-    u_op.ma_en := '0';
-    u_op.abl_en := '0';
-    u_op.abh_en := '0';
     u_op.ai_en := '0';
     u_op.bi_en := '0';
-    u_op.rgx_en := '0';
-    u_op.rgy_en := '0';
-    u_op.status_en := (OTHERS => '0');
-    u_op.wr_mem := READ_ENABLE;
-
-    u_op.mux_addr := s_MA; -- MUX for address 
-    u_op.mux_ma := s_PC; -- MUX for memory address  register
-    u_op.mux_adl := s_PC; -- MUX for address bus low
-    u_op.mux_adh := s_ZERO; -- MUX for address bus high
-    u_op.mux_ai := s_ACC; -- MUX for A input register
-    u_op.mux_bi := s_DATA; -- MUX for B input register
-    u_op.mux_pc := s_INCR; -- MUX for program counter
-    u_op.mux_dl := '0';
     u_op.acc_en := '0';
-    u_op.mux_rgx := s_ALU;
+    u_op.status_en := (OTHERS => '0');
+    u_op.mux_pc := S_INCR;
+    u_op.mux_addr := s_AB;
+    u_op.mux_adl := s_PC;
+    u_op.mux_adh := s_PC;
+    u_op.mux_ai := s_ACC;
+    u_op.mux_bi := s_DATA;
     u_op.mux_acc := s_ALU;
-    u_op.alu_op := ADC;
+  END PROCEDURE;
+
+  PROCEDURE increment_pc(VARIABLE u_op : INOUT MICRO_OPERATION) IS
+  BEGIN
+    u_op.pcl_en := '1';
+    u_op.pch_en := '1';
+    u_op.mux_pc := S_INCR;
+  END PROCEDURE;
+
+  PROCEDURE address_pc(VARIABLE u_op : INOUT MICRO_OPERATION) IS
+  BEGIN
+    u_op.mux_addr := s_AB;
+    u_op.mux_adl := s_PC;
+    u_op.mux_adh := s_PC;
+  END PROCEDURE;
+
+  PROCEDURE store_adc(VARIABLE u_op : INOUT MICRO_OPERATION) IS
+  BEGIN
+    u_op.mux_acc := s_ALU;
+    u_op.acc_en := '1';
+    u_op.status_en(CARRY) := '1';
+    u_op.status_en(ZERO) := '1';
+    u_op.status_en(NEGATIVE) := '1';
+    u_op.status_en(OVERFLOW) := '1';
   END PROCEDURE;
 
   FUNCTION decode (

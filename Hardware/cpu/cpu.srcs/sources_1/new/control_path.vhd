@@ -74,29 +74,13 @@ BEGIN
 
     CASE state IS
       WHEN T0 =>
-        -- Setup Instruction Fetch
-        u_op.mux_addr := s_MA;
-
-        u_op.mux_adl := s_PC;
-        u_op.mux_ma := s_PC;
-        u_op.ma_en := '1';
-        -- Update Program Counter
-        u_op.mux_pc := s_INCR;
-        u_op.pcl_en := '1';
-        u_op.pch_en := '1';
+        increment_pc(u_op);
+        address_pc(u_op);
 
         next_state <= T1;
       WHEN T1 =>
-        u_op.mux_addr := s_MA;
-
-        u_op.mux_adl := s_PC;
-        u_op.mux_ma := s_PC;
-        u_op.ma_en := '1';
-
-        -- Update program counter
-        u_op.mux_pc := s_INCR;
-        u_op.pcl_en := '1';
-        u_op.pch_en := '1';
+        increment_pc(u_op);
+        address_pc(u_op);
 
         next_state <= T2;
       WHEN T2 =>
@@ -106,10 +90,11 @@ BEGIN
             WHEN IMM =>
               u_op.mux_ai := s_ACC;
               u_op.ai_en := '1';
-
               u_op.mux_bi := s_DATA;
               u_op.bi_en := '1';
             WHEN ZERO_PAGE =>
+              u_op.mux_adl := s_DATA;
+              u_op.mux_adh := s_ZERO;
 
             WHEN ZERO_PAGE_X =>
             WHEN ABSOLUTE =>
@@ -125,21 +110,18 @@ BEGIN
       WHEN T3 =>
         IF decInstruction.instruction_type = ADC THEN
           u_op.alu_op := ADC;
-
           CASE (decInstruction.addressing_mode) IS
             WHEN IMM =>
-              -- Enable status registers
-              u_op.status_en(CARRY) := '1';
-              u_op.status_en(ZERO) := '1';
-              u_op.status_en(OVERFLOW) := '1';
-              u_op.status_en(NEGATIVE) := '1';
+              store_adc(u_op);
 
-              -- Store result in accumulator
-              u_op.mux_acc := s_ALU;
-              u_op.acc_en := '1';
               next_state <= T0;
-
             WHEN ZERO_PAGE =>
+              u_op.mux_ai := s_ACC;
+              u_op.ai_en := '1';
+              u_op.mux_bi := s_DATA;
+              u_op.bi_en := '1';
+
+              next_state <= T4;
             WHEN ZERO_PAGE_X =>
             WHEN ABSOLUTE =>
 
@@ -147,7 +129,17 @@ BEGIN
           END CASE;
 
         ELSE
-          next_state <= T0;
+        END IF;
+      WHEN T4 =>
+        IF decInstruction.instruction_type = ADC THEN
+          u_op.alu_op := ADC;
+          CASE (decInstruction.addressing_mode) IS
+            WHEN ZERO_PAGE =>
+              store_adc(u_op);
+
+              next_state <= T0;
+            WHEN OTHERS =>
+          END CASE;
         END IF;
       WHEN OTHERS =>
 
