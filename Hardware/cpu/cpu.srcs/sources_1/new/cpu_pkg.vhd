@@ -90,9 +90,10 @@ PACKAGE cpu_pkg IS
   TYPE RW IS (READ_ENABLE, WRITE_ENABLE);
   TYPE ALU_OPERATION IS (ADC, AD);
 
-  TYPE mux_addr_t IS (s_PC, s_AB);
-  TYPE mux_abl_t IS (s_ALU, s_DATA);
-  TYPE mux_abh_t IS (s_ZERO, s_DATA);
+  TYPE mux_addr_t IS (s_MA, s_AB);
+  TYPE mux_ma_t IS (s_PC, s_DATA);
+  TYPE mux_adl_t IS (s_PC, s_ALU, s_DATA);
+  TYPE mux_adh_t IS (s_ZERO, s_DATA);
   TYPE mux_ai_t IS (s_ACC, s_RGX);
   TYPE mux_bi_t IS (s_DATA); -- Is this the proper name?
   TYPE mux_pc_t IS (s_INCR);
@@ -105,6 +106,7 @@ PACKAGE cpu_pkg IS
     -- ENABLES
     pcl_en : STD_LOGIC; -- PC Low register enable
     pch_en : STD_LOGIC; -- PC Low register enable
+    ma_en : STD_LOGIC;
     abl_en : STD_LOGIC; -- Address bus low register enable
     abh_en : STD_LOGIC; -- Address bus low register enable
     ai_en : STD_LOGIC; -- A Input register enable
@@ -116,8 +118,9 @@ PACKAGE cpu_pkg IS
 
     -- MUX
     mux_addr : mux_addr_t;
-    mux_abl : mux_abl_t; -- MUX for address bus low
-    mux_abh : mux_abh_t; -- MUX for address bus high
+    mux_ma : mux_ma_t;
+    mux_adl : mux_adl_t; -- MUX for address bus low
+    mux_adh : mux_adh_t; -- MUX for address bus high
     mux_ai : mux_ai_t; -- MUX for A input register
     mux_bi : mux_bi_t; -- MUX for B input register
     mux_pc : mux_pc_t; -- MUX for program counter
@@ -141,6 +144,7 @@ PACKAGE BODY cpu_pkg IS
   BEGIN
     u_op.pcl_en := '0';
     u_op.pch_en := '0';
+    u_op.ma_en := '0';
     u_op.abl_en := '0';
     u_op.abh_en := '0';
     u_op.ai_en := '0';
@@ -150,9 +154,10 @@ PACKAGE BODY cpu_pkg IS
     u_op.status_en := (OTHERS => '0');
     u_op.wr_mem := READ_ENABLE;
 
-    u_op.mux_addr := s_PC; -- MUX for address 
-    u_op.mux_abl := s_ALU; -- MUX for address bus low
-    u_op.mux_abh := s_ZERO; -- MUX for address bus high
+    u_op.mux_addr := s_MA; -- MUX for address 
+    u_op.mux_ma := s_PC; -- MUX for memory address  register
+    u_op.mux_adl := s_PC; -- MUX for address bus low
+    u_op.mux_adh := s_ZERO; -- MUX for address bus high
     u_op.mux_ai := s_ACC; -- MUX for A input register
     u_op.mux_bi := s_DATA; -- MUX for B input register
     u_op.mux_pc := s_INCR; -- MUX for program counter

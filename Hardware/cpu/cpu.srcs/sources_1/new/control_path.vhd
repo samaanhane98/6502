@@ -41,7 +41,7 @@ END control_path;
 ARCHITECTURE behavioral OF control_path IS
   SIGNAL state, next_state : CPU_STATE := T0;
 
-  SIGNAL IR : STD_LOGIC_VECTOR(7 DOWNTO 0) := (OTHERS => '0');
+  -- SIGNAL IR : STD_LOGIC_VECTOR(7 DOWNTO 0) := (OTHERS => '0');
 
   SIGNAL decInstruction : DECODED_INSTRUCTION;
 
@@ -49,15 +49,13 @@ BEGIN
 
   IR_FETCH : PROCESS (clk) BEGIN
     IF rising_edge(clk) THEN
-      IF state = T0 THEN
-        IR <= instruction;
-      ELSE
-        REPORT to_string(decInstruction);
+      IF state = T1 THEN
+        decInstruction <= decode(instruction);
+
       END IF;
     END IF;
   END PROCESS;
 
-  decInstruction <= decode(IR);
   PROCESS (clk, rst) BEGIN
     IF rising_edge(clk) THEN
       state <= next_state;
@@ -77,8 +75,11 @@ BEGIN
     CASE state IS
       WHEN T0 =>
         -- Setup Instruction Fetch
-        u_op.mux_addr := s_PC;
+        u_op.mux_addr := s_MA;
 
+        u_op.mux_adl := s_PC;
+        u_op.mux_ma := s_PC;
+        u_op.ma_en := '1';
         -- Update Program Counter
         u_op.mux_pc := s_INCR;
         u_op.pcl_en := '1';
@@ -86,7 +87,11 @@ BEGIN
 
         next_state <= T1;
       WHEN T1 =>
-        u_op.mux_addr := s_PC;
+        u_op.mux_addr := s_MA;
+
+        u_op.mux_adl := s_PC;
+        u_op.mux_ma := s_PC;
+        u_op.ma_en := '1';
 
         -- Update program counter
         u_op.mux_pc := s_INCR;
@@ -95,6 +100,7 @@ BEGIN
 
         next_state <= T2;
       WHEN T2 =>
+        REPORT to_string(decInstruction);
         IF decInstruction.instruction_type = ADC THEN
           CASE (decInstruction.addressing_mode) IS
             WHEN IMM =>
@@ -104,6 +110,7 @@ BEGIN
               u_op.mux_bi := s_DATA;
               u_op.bi_en := '1';
             WHEN ZERO_PAGE =>
+
             WHEN ZERO_PAGE_X =>
             WHEN ABSOLUTE =>
 

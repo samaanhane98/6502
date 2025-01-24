@@ -35,24 +35,16 @@ ARCHITECTURE behavioral OF top IS
   -- SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"65", 1 => x"05", 5 => x"AB", OTHERS => (OTHERS => '0'));
   -- SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"75", 1 => x"04", 5 => x"AB", OTHERS => (OTHERS => '0'));
   -- SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"6D", 1 => x"01", 2 => x"01", 257 => x"AA", OTHERS => (OTHERS => '0'));
-
-  -- ? Added for better modeling
-  SIGNAL PHI0, PHI2 : STD_LOGIC;
-
   SIGNAL data_in : STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL data_out : STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL address : STD_LOGIC_VECTOR(15 DOWNTO 0);
   SIGNAL rw : RW;
 
 BEGIN
-  RW_OPERATION : PROCESS (clk) BEGIN
+  PROCESS (clk)
+  BEGIN
     IF rising_edge(clk) THEN
-      CASE (rw) IS
-        WHEN READ_ENABLE =>
-          data_in <= memory(to_integer(unsigned(address)));
-        WHEN WRITE_ENABLE =>
-          memory(to_integer(unsigned(address))) <= data_out;
-      END CASE;
+      data_in <= memory(to_integer(unsigned(address)));
     END IF;
   END PROCESS;
 

@@ -7,32 +7,24 @@ States shared between different addressing modes:
 
         ALL
         ----
-            //////////// Original //////////// 
             T0: MAR <- PC ;  PC++                           # Fetch
             T1: MAR <- PC ; IR <- MEM[MAR] ; PC++;          # First Decode step, IR receives opcode     
             
-            //////////// Sam //////////// 
-            T0: ADDR <- PC ;  PC++                           # Fetch
-            T1: ADDR <- PC ; IR <- MEM[MAR] ; PC++;          # First Decode step, IR receives opcode     
-
 Specific States:
             
         ADC
         ----
             - IMM: ADC #01 (69 01)                              # AC <- AC + 01 + c
-            //////////// Original //////////// 
                 T2: BI <- MEM[MAR]; AI <- AC
                 T3: AC <- AI + BI + c; wrn; wrz; wrc; wrv; 
             
-            //////////// Sam //////////// 
-                T2: BI <- data_in; AI <- AC
-                T3: AC <- AI + BI + c; wrn; wrz; wrc; wrv; 
-
                 
             - Z-PAGE: ADC $33 (65 33)                           # AC <- AC + MEM[33h] + c
                 T2: MAR <- MEM[MAR];                      
                 T3: BI <- MEM[MAR]; AI <- AC  
                 T4: AC <- AI + BI + c; wrn; wrz; wrc; wrv;
+            
+
                  
             - Z-PAGE,X: adc $13 (75 13)                         # AC <- AC + MEM[13h+X] + c
                 T2: BI <- MEM[MAR]; AI <- X

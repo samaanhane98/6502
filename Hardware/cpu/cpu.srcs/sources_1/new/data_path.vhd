@@ -38,8 +38,6 @@ ENTITY data_path IS
 END data_path;
 
 ARCHITECTURE behavioral OF data_path IS
-  -- -- Data register
-  -- SIGNAL DATA_d, DATA_q : STD_LOGIC_VECTOR(7 DOWNTO 0) := (OTHERS => '0');
 
   SIGNAL status_d, status_q : STATUS := (OTHERS => '0');
 
@@ -61,10 +59,11 @@ ARCHITECTURE behavioral OF data_path IS
   SIGNAL RGX_d, RGX_q : RGX := (OTHERS => '0');
 
   -- Address registers
-  SIGNAL ABL_d, ABL_q : STD_LOGIC_VECTOR(7 DOWNTO 0) := (OTHERS => '0');
-  SIGNAL ABH_d, ABH_q : STD_LOGIC_VECTOR(7 DOWNTO 0) := (OTHERS => '0');
+  SIGNAL MA_d, MA_q : STD_LOGIC_VECTOR(15 DOWNTO 0) := (OTHERS => '0');
+  SIGNAL ADL, ABL_q : STD_LOGIC_VECTOR(7 DOWNTO 0) := (OTHERS => '0');
+  SIGNAL ADH, ABH_q : STD_LOGIC_VECTOR(7 DOWNTO 0) := (OTHERS => '0');
 BEGIN
-  -- -- Program Counter
+  -- Program Counter
   PC_MUX : pc_in <= STD_LOGIC_VECTOR(unsigned(pch_q) & unsigned(pcl_q) + 1) WHEN u_operation.mux_pc = s_INCR ELSE
   (OTHERS => '0');
 
@@ -94,13 +93,31 @@ BEGIN
       ce => u_operation.pch_en
     );
 
-  ADDR_MUX : address <= pch_q & pcl_q WHEN u_operation.mux_addr = s_PC ELSE
+  -- ADDRESSING
+  ADDR_MUX : address <= MA_q WHEN u_operation.mux_addr = s_MA ELSE
   ABH_q & ABL_q WHEN u_operation.mux_addr = s_AB ELSE
   (OTHERS => '0');
 
-  ABL_MUX : ABL_d <= data_in WHEN u_operation.mux_abl = s_DATA ELSE
-  alu_res WHEN u_operation.mux_abl = s_ALU ELSE
-  (OTHERS => '0');
+  MA_MUX : MA_d <= x"00" & data_in WHEN u_operation.mux_ma = s_DATA ELSE
+  pch_q & pcl_q WHEN u_operation.mux_ma = s_PC;
+
+  -- ! This register is not present in the actual processor but used so latches are not required
+  MA_REGISTER : ENTITY work.bits_register
+    GENERIC MAP(
+      WIDTH => 16
+    )
+    PORT MAP(
+      clk => clk,
+      rst => rst,
+      d => MA_d,
+      q => MA_q,
+      ce => u_operation.ma_en
+    );
+
+  ADL_MUX : ADL <= data_in WHEN u_operation.mux_adl = s_DATA ELSE
+  alu_res WHEN u_operation.mux_adl = s_ALU ELSE
+  PCL_q WHEN u_operation.mux_adl = s_PC;
+  -- (OTHERS => '0');
 
   ABL_REGISTER : ENTITY work.bits_register GENERIC MAP (
     WIDTH => 8
@@ -108,12 +125,12 @@ BEGIN
     PORT MAP(
       clk => clk,
       rst => rst,
-      d => ABL_d,
+      d => ADL,
       q => ABL_q,
       ce => u_operation.abl_en
     );
 
-  ABH_MUX : ABH_d <= data_in WHEN u_operation.mux_abh = s_DATA ELSE
+  ADH_MUX : ADH <= data_in WHEN u_operation.mux_adh = s_DATA ELSE
   (OTHERS => '0');
 
   ABH_REGISTER : ENTITY work.bits_register GENERIC MAP (
@@ -122,7 +139,7 @@ BEGIN
     PORT MAP(
       clk => clk,
       rst => rst,
-      d => ABH_d,
+      d => ADH,
       q => ABH_q,
       ce => u_operation.abl_en
     );
