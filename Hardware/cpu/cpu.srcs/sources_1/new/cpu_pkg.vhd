@@ -44,10 +44,10 @@ PACKAGE cpu_pkg IS
   CONSTANT OVERFLOW : INTEGER := 6;
   CONSTANT NEGATIVE : INTEGER := 7;
 
-  TYPE CPU_STATE IS (T0, T1, T2, T3, T4, T5);
+  TYPE CPU_STATE IS (T0, T1, T2, T3, T4, T5, T6);
 
   -- Instruction types
-  TYPE ADDRESSING_MODE IS (IMPL, IMM, ZERO_PAGE, ZERO_PAGE_X, ABSOLUTE);
+  TYPE ADDRESSING_MODE IS (IMPL, IMM, ZERO_PAGE, ZERO_PAGE_X, ABSOLUTE, ABSOLUTE_X);
   TYPE INSTRUCTION_TYPE IS (
     NOP, ADC
   );
@@ -74,8 +74,8 @@ PACKAGE cpu_pkg IS
   TYPE mux_addr_t IS (s_MA, s_AB);
   TYPE mux_ma_t IS (s_PC, s_DATA);
   TYPE mux_adl_t IS (s_PC, s_ALU, s_DATA);
-  TYPE mux_adh_t IS (s_PC, s_DATA, s_ZERO);
-  TYPE mux_ai_t IS (s_ACC, s_RGX);
+  TYPE mux_adh_t IS (s_PC, s_DATA, s_ALU, s_ZERO);
+  TYPE mux_ai_t IS (s_ACC, s_RGX, s_ZERO);
   TYPE mux_bi_t IS (s_DB);
   TYPE mux_acc_t IS (s_SB);
   TYPE MICRO_OPERATION IS RECORD
@@ -186,6 +186,11 @@ PACKAGE BODY cpu_pkg IS
         o_instr.addressing_mode := ABSOLUTE;
         o_instr.instruction_length := 3;
 
+      WHEN x"7D" =>
+        o_instr.instruction_type := ADC;
+        o_instr.addressing_mode := ABSOLUTE_X;
+        o_instr.instruction_length := 3;
+
       WHEN OTHERS =>
 
         o_instr.instruction_type := NOP;
@@ -204,6 +209,7 @@ PACKAGE BODY cpu_pkg IS
       WHEN ZERO_PAGE => RETURN "Zero Page";
       WHEN ZERO_PAGE_X => RETURN "Zero Page X";
       WHEN ABSOLUTE => RETURN "Absolute";
+      WHEN ABSOLUTE_X => RETURN "Absolute,X";
       WHEN OTHERS => RETURN "UNKNOWN";
     END CASE;
   END FUNCTION;
