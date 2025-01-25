@@ -243,26 +243,3 @@ BEGIN
     ce => u_operation.status_en
     );
 END behavioral;
-
--- -- ADDRESSING
--- ADDR_MUX : address <= MA_q WHEN u_operation.mux_addr = s_MA ELSE
--- ABH_q & ABL_q WHEN u_operation.mux_addr = s_AB ELSE
--- (OTHERS => '0');
-
--- -- ALU Operand registers
-
--- -- -- X & Y registers
--- -- RGX_MUX : RGX_d <= alu_res WHEN u_operation.mux_rgx = s_ALU ELSE
--- -- (OTHERS => '0');
-
--- -- X_REGISTER : ENTITY work.bits_register GENERIC MAP (
--- --   WIDTH => 8,
--- --   INIT_VALUE => 1
--- --   )
--- --   PORT MAP(
--- --     clk => clk,
--- --     rst => rst,
--- --     d => RGX_d,
--- --     q => RGX_q,
--- --     ce => u_operation.rgx_en
--- --   );
