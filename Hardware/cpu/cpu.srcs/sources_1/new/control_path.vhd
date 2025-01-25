@@ -23,11 +23,6 @@ USE IEEE.NUMERIC_STD.ALL;
 
 USE work.cpu_pkg.ALL;
 
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
-
 ENTITY control_path IS
   PORT (
     clk : IN STD_LOGIC;
@@ -95,6 +90,9 @@ BEGIN
             WHEN ABSOLUTE_X | ABSOLUTE_Y =>
               next_state <= T4;
 
+            WHEN INDEXED_INDIRECT =>
+              next_state <= T4;
+
             WHEN OTHERS =>
           END CASE;
         END IF;
@@ -110,6 +108,9 @@ BEGIN
               next_state <= T5;
             WHEN ABSOLUTE_X | ABSOLUTE_Y =>
               next_state <= T5;
+            WHEN INDEXED_INDIRECT =>
+              next_state <= T5;
+
             WHEN OTHERS =>
           END CASE;
         END IF;
@@ -123,6 +124,8 @@ BEGIN
               next_state <= T0;
             WHEN ABSOLUTE_X | ABSOLUTE_Y =>
               next_state <= T6;
+            WHEN INDEXED_INDIRECT =>
+              next_state <= T6;
             WHEN OTHERS =>
           END CASE;
         END IF;
@@ -133,10 +136,21 @@ BEGIN
             WHEN ABSOLUTE_X | ABSOLUTE_Y =>
               next_state <= T0;
 
+            WHEN INDEXED_INDIRECT =>
+              next_state <= T7;
             WHEN OTHERS =>
           END CASE;
         END IF;
 
+      WHEN T7 =>
+        IF decInstruction.instruction_type = ADC THEN
+          CASE (decInstruction.addressing_mode) IS
+            WHEN INDEXED_INDIRECT =>
+              next_state <= T0;
+
+            WHEN OTHERS =>
+          END CASE;
+        END IF;
       WHEN OTHERS =>
     END CASE;
 
@@ -222,6 +236,15 @@ BEGIN
               u_op.mux_db := s_DATA;
               u_op.mux_bi := s_db;
               u_op.bi_en := '1';
+
+            WHEN INDEXED_INDIRECT =>
+              u_op.mux_sb := s_RGX;
+              u_op.mux_ai := s_sb;
+              u_op.ai_en := '1';
+
+              u_op.mux_db := s_DATA;
+              u_op.mux_bi := s_db;
+              u_op.bi_en := '1';
             WHEN OTHERS =>
           END CASE;
 
@@ -275,6 +298,17 @@ BEGIN
               u_op.mux_adl := s_ALU;
               u_op.abl_en := '1';
 
+            WHEN INDEXED_INDIRECT =>
+              ------- Addressing ------- 
+              u_op.mux_addr := s_AB;
+              -------------------------- 
+
+              u_op.alu_op := AD;
+              u_op.mux_adl := s_ALU;
+              u_op.abl_en := '1';
+              u_op.mux_adh := s_ZERO;
+              u_op.abh_en := '1';
+
             WHEN OTHERS =>
           END CASE;
 
@@ -317,6 +351,22 @@ BEGIN
               u_op.mux_adh := s_ALU;
               u_op.abh_en := '1';
 
+            WHEN INDEXED_INDIRECT =>
+              ------- Addressing ------- 
+              u_op.mux_addr := s_AB;
+              -------------------------- 
+              u_op.mux_ai := s_ZERO;
+              u_op.ai_en := '1';
+
+              u_op.mux_db := s_DATA;
+              u_op.mux_bi := s_DB;
+              u_op.bi_en := '1';
+
+              u_op.alu_op := AD_INC;
+              u_op.mux_adl := s_ALU;
+              u_op.abl_en := '1';
+              u_op.mux_adh := s_ZERO;
+              u_op.abh_en := '1';
             WHEN OTHERS =>
           END CASE;
         END IF;
@@ -338,11 +388,48 @@ BEGIN
               u_op.mux_db := s_DATA;
               u_op.mux_bi := s_DB;
               u_op.bi_en := '1';
+
+            WHEN INDEXED_INDIRECT =>
+              ------- Addressing ------- 
+              u_op.mux_addr := s_AB;
+              -------------------------- 
+              u_op.alu_op := AD;
+              u_op.mux_adl := s_ALU;
+              u_op.abl_en := '1';
+              u_op.mux_adh := s_DATA;
+              u_op.abh_en := '1';
+
             WHEN OTHERS =>
           END CASE;
         END IF;
       WHEN T6 =>
-        store_adc(u_op);
+        IF decInstruction.instruction_type = ADC THEN
+          u_op.alu_op := ADC;
+          CASE (decInstruction.addressing_mode) IS
+            WHEN ABSOLUTE_X | ABSOLUTE_Y =>
+              store_adc(u_op);
+            WHEN INDEXED_INDIRECT =>
+              u_op.mux_sb := s_ACC;
+              u_op.mux_ai := s_SB;
+              u_op.ai_en := '1';
+
+              u_op.mux_db := s_DATA;
+              u_op.mux_bi := s_DB;
+              u_op.bi_en := '1';
+
+            WHEN OTHERS =>
+          END CASE;
+        END IF;
+
+      WHEN T7 =>
+        IF decInstruction.instruction_type = ADC THEN
+          u_op.alu_op := ADC;
+          CASE (decInstruction.addressing_mode) IS
+            WHEN INDEXED_INDIRECT =>
+              store_adc(u_op);
+            WHEN OTHERS =>
+          END CASE;
+        END IF;
       WHEN OTHERS =>
 
     END CASE;
