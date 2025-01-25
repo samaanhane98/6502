@@ -66,7 +66,7 @@ BEGIN
   data_in WHEN u_operation.mux_adl = s_DATA;
 
   ADH_MUX : ADH <= PCH_q WHEN u_operation.mux_adh = s_PC ELSE
-  data_in WHEN u_operation.mux_adl = s_DATA ELSE
+  data_in WHEN u_operation.mux_adh = s_DATA ELSE
   (OTHERS => '0');
 
   -- ALU
@@ -85,8 +85,7 @@ BEGIN
     );
 
   -- REGISTERS
-  -- TODO: mistake here, PC install of ad directly
-  MA_MUX : MA_d <= ADH & ADL WHEN u_operation.mux_ma = s_AD ELSE
+  MA_MUX : MA_d <= PCH_q & PCL_q WHEN u_operation.mux_ma = s_PC ELSE
   x"00" & data_in WHEN u_operation.mux_ma = s_DATA;
 
   MA_REGISTER : ENTITY work.bits_register
@@ -148,7 +147,7 @@ BEGIN
       rst => rst,
       d => ADH,
       q => ABH_q,
-      ce => u_operation.abl_en
+      ce => u_operation.abh_en
     );
 
   AI_MUX : AI_d <= ACC_q WHEN u_operation.mux_ai = s_ACC ELSE
@@ -181,7 +180,7 @@ BEGIN
       ce => u_operation.bi_en
     );
 
-  RGX_MUX : RGX_d <= x"01";
+  RGX_MUX : RGX_d <= x"00";
 
   RGX_REGISTER : ENTITY work.bits_register
     GENERIC MAP(

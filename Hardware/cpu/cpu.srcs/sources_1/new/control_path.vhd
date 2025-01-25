@@ -66,9 +66,67 @@ BEGIN
     END IF;
   END PROCESS;
 
+  STATE_MACHINE : PROCESS (state) BEGIN
+    CASE STATE IS
+      WHEN T0 =>
+        next_state <= T1;
+      WHEN T1 =>
+        next_state <= T2;
+
+      WHEN T2 =>
+        IF decInstruction.instruction_type = ADC THEN
+          next_state <= T3;
+        ELSE
+          next_state <= T0;
+        END IF;
+
+      WHEN T3 =>
+        IF decInstruction.instruction_type = ADC THEN
+          CASE (decInstruction.addressing_mode) IS
+            WHEN IMM =>
+              next_state <= T0;
+            WHEN ZERO_PAGE =>
+              next_state <= T4;
+            WHEN ZERO_PAGE_X =>
+              next_state <= T4;
+            WHEN ABSOLUTE =>
+              next_state <= T4;
+            WHEN OTHERS =>
+          END CASE;
+        END IF;
+
+      WHEN T4 =>
+        IF decInstruction.instruction_type = ADC THEN
+          CASE (decInstruction.addressing_mode) IS
+            WHEN ZERO_PAGE =>
+              next_state <= T0;
+            WHEN ZERO_PAGE_X =>
+              next_state <= T5;
+            WHEN ABSOLUTE =>
+              next_state <= T5;
+            WHEN OTHERS =>
+          END CASE;
+        END IF;
+
+      WHEN T5 =>
+        IF decInstruction.instruction_type = ADC THEN
+          CASE (decInstruction.addressing_mode) IS
+            WHEN ZERO_PAGE_X =>
+              next_state <= T0;
+            WHEN ABSOLUTE =>
+              next_state <= T0;
+            WHEN OTHERS =>
+          END CASE;
+        END IF;
+
+      WHEN OTHERS =>
+    END CASE;
+
+  END PROCESS;
+
   -- ! Note to self: every state change requires specifying the address
   -- ! The data will be available in the next cycle this way
-  STATE_MACHINE : PROCESS (state, rst)
+  CONTROL_SIGNALS : PROCESS (state, rst)
     VARIABLE u_op : MICRO_OPERATION;
 
   BEGIN
@@ -82,17 +140,12 @@ BEGIN
 
         increment_pc(u_op);
 
-        u_op.ma_en := '1';
-        next_state <= T1;
       WHEN T1 =>
         ------- Addressing ------- 
         address_pc(u_op);
         -------------------------- 
 
         increment_pc(u_op);
-        u_op.ma_en := '1';
-
-        next_state <= T2;
       WHEN T2 =>
         REPORT to_string(decInstruction);
         IF decInstruction.instruction_type = ADC THEN
@@ -105,11 +158,9 @@ BEGIN
             WHEN ZERO_PAGE =>
               ------- Addressing ------- 
               u_op.mux_addr := s_MA;
-              u_op.mux_adl := s_DATA;
-              u_op.mux_adh := s_ZERO;
               -------------------------- 
 
-              u_op.mux_ma := s_AD;
+              u_op.mux_ma := s_DATA;
               u_op.ma_en := '1';
 
             WHEN ZERO_PAGE_X =>
@@ -120,20 +171,17 @@ BEGIN
 
             WHEN ABSOLUTE =>
               ------- Addressing ------- 
-              address_pc(u_op);
+              u_op.mux_addr := s_MA;
               -------------------------- 
+              increment_pc(u_op);
               u_op.ma_en := '1';
 
-              -- TODO: mistake here, adl should be pc but is overwritten
               u_op.mux_adl := s_DATA;
               u_op.abl_en := '1';
 
             WHEN OTHERS =>
           END CASE;
-          next_state <= T3;
 
-        ELSE
-          next_state <= T0;
         END IF;
 
       WHEN T3 =>
@@ -142,15 +190,12 @@ BEGIN
           CASE (decInstruction.addressing_mode) IS
             WHEN IMM =>
               store_adc(u_op);
-
-              next_state <= T0;
             WHEN ZERO_PAGE =>
               u_op.mux_ai := s_ACC;
               u_op.ai_en := '1';
               u_op.mux_bi := s_DB;
               u_op.bi_en := '1';
 
-              next_state <= T4;
             WHEN ZERO_PAGE_X =>
               ------- Addressing ------- 
               u_op.mux_addr := s_AB;
@@ -159,7 +204,6 @@ BEGIN
               u_op.alu_op := AD;
               u_op.mux_adl := s_ALU;
               u_op.abl_en := '1';
-              next_state <= T4;
             WHEN ABSOLUTE =>
               ------- Addressing ------- 
               u_op.mux_addr := s_AB;
@@ -167,7 +211,6 @@ BEGIN
               u_op.mux_adh := s_DATA;
               u_op.abh_en := '1';
 
-              next_state <= T4;
             WHEN OTHERS =>
           END CASE;
 
@@ -180,22 +223,22 @@ BEGIN
             WHEN ZERO_PAGE =>
               store_adc(u_op);
 
-              next_state <= T0;
             WHEN ZERO_PAGE_X =>
               u_op.mux_ai := s_ACC;
               u_op.ai_en := '1';
               u_op.mux_bi := s_DB;
               u_op.bi_en := '1';
 
-              next_state <= T5;
-
             WHEN ABSOLUTE =>
+              ------- Addressing ------- 
+              u_op.mux_addr := s_AB;
+              -------------------------- 
+
               u_op.mux_ai := s_ACC;
               u_op.ai_en := '1';
               u_op.mux_bi := s_DB;
               u_op.bi_en := '1';
 
-              next_state <= T5;
             WHEN OTHERS =>
           END CASE;
         END IF;
@@ -205,10 +248,9 @@ BEGIN
           CASE (decInstruction.addressing_mode) IS
             WHEN ZERO_PAGE_X =>
               store_adc(u_op);
-              next_state <= T0;
+
             WHEN ABSOLUTE =>
               store_adc(u_op);
-              next_state <= T0;
             WHEN OTHERS =>
           END CASE;
         END IF;

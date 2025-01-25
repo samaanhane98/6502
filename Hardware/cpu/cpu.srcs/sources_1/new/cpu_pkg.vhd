@@ -72,7 +72,7 @@ PACKAGE cpu_pkg IS
 
   TYPE mux_pc_t IS (s_INCR);
   TYPE mux_addr_t IS (s_MA, s_AB);
-  TYPE mux_ma_t IS (s_AD, s_DATA);
+  TYPE mux_ma_t IS (s_PC, s_DATA);
   TYPE mux_adl_t IS (s_PC, s_ALU, s_DATA);
   TYPE mux_adh_t IS (s_PC, s_DATA, s_ZERO);
   TYPE mux_ai_t IS (s_ACC, s_RGX);
@@ -129,7 +129,7 @@ PACKAGE BODY cpu_pkg IS
     u_op.rgx_en := '0';
     u_op.status_en := (OTHERS => '0');
     u_op.mux_pc := S_INCR;
-    u_op.mux_ma := s_AD;
+    u_op.mux_ma := s_PC;
     u_op.mux_addr := s_MA;
     u_op.mux_adl := s_PC;
     u_op.mux_adh := s_PC;
@@ -148,23 +148,9 @@ PACKAGE BODY cpu_pkg IS
   PROCEDURE address_pc(VARIABLE u_op : INOUT MICRO_OPERATION) IS
   BEGIN
     u_op.mux_addr := s_MA;
-    u_op.mux_adl := s_PC;
-    u_op.mux_adh := s_PC;
+    u_op.mux_ma := s_PC;
+    u_op.ma_en := '1';
   END PROCEDURE;
-
-  -- PROCEDURE address_data(VARIABLE u_op : INOUT MICRO_OPERATION) IS
-  -- BEGIN
-  --   u_op.mux_addr := s_MA;
-  --   u_op.mux_adl := s_DATA;
-  --   u_op.mux_adh := s_ZERO;
-  -- END PROCEDURE;
-
-  -- PROCEDURE address_ab(VARIABLE u_op : INOUT MICRO_OPERATION) IS
-  -- BEGIN
-  --   u_op.mux_addr := s_AB;
-  --   u_op.mux_adl := s_DATA;
-  --   u_op.mux_adh := s_ZERO;
-  -- END PROCEDURE;
 
   PROCEDURE store_adc(VARIABLE u_op : INOUT MICRO_OPERATION) IS
   BEGIN

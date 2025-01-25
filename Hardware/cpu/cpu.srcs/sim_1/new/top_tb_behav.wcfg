@@ -12,14 +12,18 @@
    </db_ref_list>
    <zoom_setting>
       <ZoomStartTime time="0.000000 us"></ZoomStartTime>
-      <ZoomEndTime time="10.140001 us"></ZoomEndTime>
-      <Cursor1Time time="2.000000 us"></Cursor1Time>
+      <ZoomEndTime time="10.952381 us"></ZoomEndTime>
+      <Cursor1Time time="4.000000 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="153"></NameColumnWidth>
-      <ValueColumnWidth column_width="107"></ValueColumnWidth>
+      <ValueColumnWidth column_width="103"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="7" />
+   <WVObjectSize size="8" />
+   <wvobject type="logic" fp_name="/top_tb/DUT/clk">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
    <wvobject type="logic" fp_name="/top_tb/DUT/rst">
       <obj_property name="ElementShortName">rst</obj_property>
       <obj_property name="ObjectShortName">rst</obj_property>
@@ -108,7 +112,6 @@
       <wvobject type="group" fp_name="group207">
          <obj_property name="label">ABH</obj_property>
          <obj_property name="DisplayName">label</obj_property>
-         <obj_property name="isExpanded"></obj_property>
          <wvobject type="logic" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/ABH_REGISTER/clk">
             <obj_property name="ElementShortName">clk</obj_property>
             <obj_property name="ObjectShortName">clk</obj_property>
@@ -153,6 +156,7 @@
       <wvobject type="group" fp_name="group67">
          <obj_property name="label">MA</obj_property>
          <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="isExpanded"></obj_property>
          <wvobject type="logic" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/MA_REGISTER/clk">
             <obj_property name="ElementShortName">clk</obj_property>
             <obj_property name="ObjectShortName">clk</obj_property>
@@ -225,6 +229,7 @@
       <wvobject type="group" fp_name="group59">
          <obj_property name="label">ACC</obj_property>
          <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="isExpanded"></obj_property>
          <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/ACC_d">
             <obj_property name="ElementShortName">ACC_d[7:0]</obj_property>
             <obj_property name="ObjectShortName">ACC_d[7:0]</obj_property>
@@ -285,6 +290,7 @@
       <wvobject type="group" fp_name="group191">
          <obj_property name="label">BUSES</obj_property>
          <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="isExpanded"></obj_property>
          <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/DB">
             <obj_property name="ElementShortName">DB[7:0]</obj_property>
             <obj_property name="ObjectShortName">DB[7:0]</obj_property>
