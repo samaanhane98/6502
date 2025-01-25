@@ -47,7 +47,7 @@ PACKAGE cpu_pkg IS
   TYPE CPU_STATE IS (T0, T1, T2, T3, T4, T5, T6);
 
   -- Instruction types
-  TYPE ADDRESSING_MODE IS (IMPL, IMM, ZERO_PAGE, ZERO_PAGE_X, ABSOLUTE, ABSOLUTE_X);
+  TYPE ADDRESSING_MODE IS (IMPL, IMM, ZERO_PAGE, ZERO_PAGE_X, ABSOLUTE, ABSOLUTE_X, ABSOLUTE_Y);
   TYPE INSTRUCTION_TYPE IS (
     NOP, ADC
   );
@@ -70,14 +70,17 @@ PACKAGE cpu_pkg IS
   TYPE RW IS (READ_ENABLE, WRITE_ENABLE);
   TYPE ALU_OPERATION IS (ADC, AD);
 
+  TYPE mux_db_t IS (s_DATA, s_ACC, s_PCL, s_PCH, s_SB);
+  TYPE mux_sb_t IS (s_RGX, s_RGY, s_ACC, s_ALU, s_ADH, s_DB);
+
   TYPE mux_pc_t IS (s_INCR);
   TYPE mux_addr_t IS (s_MA, s_AB);
   TYPE mux_ma_t IS (s_PC, s_DATA);
   TYPE mux_adl_t IS (s_PC, s_ALU, s_DATA);
   TYPE mux_adh_t IS (s_PC, s_DATA, s_ALU, s_ZERO);
-  TYPE mux_ai_t IS (s_ACC, s_RGX, s_ZERO);
+  TYPE mux_ai_t IS (s_SB, s_ZERO);
   TYPE mux_bi_t IS (s_DB);
-  TYPE mux_acc_t IS (s_SB);
+  TYPE mux_acc_t IS (s_SB, s_DB);
   TYPE MICRO_OPERATION IS RECORD
     wr_mem : RW; -- WRITE/READ operation
     alu_op : ALU_OPERATION;
@@ -95,6 +98,8 @@ PACKAGE cpu_pkg IS
     status_en : STD_LOGIC_VECTOR(7 DOWNTO 0);
 
     -- MUX
+    mux_db : mux_db_t;
+    mux_sb : mux_sb_t;
     mux_pc : mux_pc_t;
     mux_ma : mux_ma_t;
     mux_addr : mux_addr_t;
@@ -128,12 +133,14 @@ PACKAGE BODY cpu_pkg IS
     u_op.acc_en := '0';
     u_op.rgx_en := '0';
     u_op.status_en := (OTHERS => '0');
+    u_op.mux_db := s_DATA;
+    u_op.mux_sb := s_ALU;
     u_op.mux_pc := S_INCR;
     u_op.mux_ma := s_PC;
     u_op.mux_addr := s_MA;
     u_op.mux_adl := s_PC;
     u_op.mux_adh := s_PC;
-    u_op.mux_ai := s_ACC;
+    u_op.mux_ai := s_SB;
     u_op.mux_bi := s_DB;
     u_op.mux_acc := s_SB;
   END PROCEDURE;
@@ -155,6 +162,7 @@ PACKAGE BODY cpu_pkg IS
   PROCEDURE store_adc(VARIABLE u_op : INOUT MICRO_OPERATION) IS
   BEGIN
     u_op.mux_acc := s_SB;
+    u_op.mux_sb := s_ALU;
     u_op.acc_en := '1';
     u_op.status_en(CARRY) := '1';
     u_op.status_en(ZERO) := '1';
@@ -190,6 +198,10 @@ PACKAGE BODY cpu_pkg IS
         o_instr.instruction_type := ADC;
         o_instr.addressing_mode := ABSOLUTE_X;
         o_instr.instruction_length := 3;
+      WHEN x"79" =>
+        o_instr.instruction_type := ADC;
+        o_instr.addressing_mode := ABSOLUTE_Y;
+        o_instr.instruction_length := 3;
 
       WHEN OTHERS =>
 
@@ -210,6 +222,7 @@ PACKAGE BODY cpu_pkg IS
       WHEN ZERO_PAGE_X => RETURN "Zero Page X";
       WHEN ABSOLUTE => RETURN "Absolute";
       WHEN ABSOLUTE_X => RETURN "Absolute,X";
+      WHEN ABSOLUTE_Y => RETURN "Absolute,Y";
       WHEN OTHERS => RETURN "UNKNOWN";
     END CASE;
   END FUNCTION;

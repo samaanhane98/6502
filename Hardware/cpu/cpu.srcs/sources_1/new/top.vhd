@@ -34,8 +34,9 @@ ARCHITECTURE behavioral OF top IS
   -- SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"69", 1 => x"05", OTHERS => (OTHERS => '0')); -- IMM
   -- SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"65", 1 => x"05", 5 => x"AB", OTHERS => (OTHERS => '0')); -- ZP
   -- SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"75", 1 => x"04", 5 => x"AB", OTHERS => (OTHERS => '0')); -- ZPX
-  -- SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"6D", 1 => x"01", 2 => x"01", 257 => x"AA", OTHERS => (OTHERS => '0')); -- ABS
-  SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"7D", 1 => x"00", 2 => x"01", 257 => x"AA", OTHERS => (OTHERS => '0')); -- ABSX
+  -- SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"6D", 1 => x"01", 2 => x"01", 257 => x"AB", OTHERS => (OTHERS => '0')); -- ABS
+  -- SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"7D", 1 => x"00", 2 => x"01", 257 => x"AB", OTHERS => (OTHERS => '0')); -- ABSX
+  SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"79", 1 => x"00", 2 => x"01", 257 => x"AB", OTHERS => (OTHERS => '0')); -- ABSY
 
   SIGNAL data_in : STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL data_out : STD_LOGIC_VECTOR(7 DOWNTO 0);

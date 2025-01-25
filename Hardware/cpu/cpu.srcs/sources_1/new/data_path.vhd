@@ -45,7 +45,7 @@ ARCHITECTURE behavioral OF data_path IS
   SIGNAL ADL, ADH, DB, SB : STD_LOGIC_VECTOR(7 DOWNTO 0);
 
   -- REGISTERS
-  SIGNAL AI_q, AI_d, BI_q, BI_d, ACC_q, ACC_d, RGX_q, RGX_d, ABL_q, ABH_q : STD_LOGIC_VECTOR(7 DOWNTO 0);
+  SIGNAL AI_q, AI_d, BI_q, BI_d, ACC_q, ACC_d, RGX_q, RGX_d, RGY_q, RGY_d, ABL_q, ABH_q : STD_LOGIC_VECTOR(7 DOWNTO 0);
 
   SIGNAL MA_q, MA_d : STD_LOGIC_VECTOR(15 DOWNTO 0);
 
@@ -58,8 +58,18 @@ BEGIN
   ABH_q & ABL_q WHEN u_operation.mux_addr = s_AB;
 
   -- Buses
-  MUX_DB : DB <= data_in;
-  MUX_SB : SB <= alu_res;
+  MUX_DB : DB <= data_in WHEN u_operation.mux_db = s_DATA ELSE
+  ACC_q WHEN u_operation.mux_db = s_ACC ELSE
+  PCL_q WHEN u_operation.mux_db = s_PCL ELSE
+  PCH_q WHEN u_operation.mux_db = s_PCH ELSE
+  SB WHEN u_operation.mux_db = s_SB;
+
+  MUX_SB : SB <= alu_res WHEN u_operation.mux_sb = s_ALU ELSE
+  RGX_q WHEN u_operation.mux_sb = s_RGX ELSE
+  RGY_q WHEN u_operation.mux_sb = s_RGY ELSE
+  ACC_q WHEN u_operation.mux_sb = s_ACC ELSE
+  ADH WHEN u_operation.mux_sb = s_ADH ELSE
+  DB WHEN u_operation.mux_sb = s_DB;
 
   ADL_MUX : ADL <= PCL_q WHEN u_operation.mux_adl = s_PC ELSE
   alu_res WHEN u_operation.mux_adl = s_ALU ELSE
@@ -154,8 +164,7 @@ BEGIN
       ce => u_operation.abh_en
     );
 
-  AI_MUX : AI_d <= ACC_q WHEN u_operation.mux_ai = s_ACC ELSE
-  RGX_q WHEN u_operation.mux_ai = s_RGX ELSE
+  AI_MUX : AI_d <= SB WHEN u_operation.mux_ai = s_SB ELSE
   (OTHERS => '0') WHEN u_operation.mux_ai = s_ZERO;
 
   AI_REGISTER : ENTITY work.bits_register
@@ -185,7 +194,7 @@ BEGIN
       ce => u_operation.bi_en
     );
 
-  RGX_MUX : RGX_d <= x"01";
+  RGX_MUX : RGX_d <= x"00";
 
   RGX_REGISTER : ENTITY work.bits_register
     GENERIC MAP(
@@ -199,7 +208,22 @@ BEGIN
       ce => '1'
     );
 
-  ACC_MUX : ACC_d <= SB WHEN u_operation.mux_acc = s_SB;
+  RGY_MUX : RGY_d <= x"00";
+
+  RGY_REGISTER : ENTITY work.bits_register
+    GENERIC MAP(
+      WIDTH => 8
+    )
+    PORT MAP(
+      clk => clk,
+      rst => rst,
+      d => RGY_d,
+      q => RGY_q,
+      ce => '1'
+    );
+
+  ACC_MUX : ACC_d <= SB WHEN u_operation.mux_acc = s_SB ELSE
+  DB WHEN u_operation.mux_acc = s_DB;
 
   ACC_REGISTER : ENTITY work.bits_register GENERIC MAP (
     WIDTH => 8

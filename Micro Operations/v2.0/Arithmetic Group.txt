@@ -31,6 +31,8 @@ Specific States:
                 T3: ABL <- AI + BI;
                 T4: BI <- MEM[ABH/ABL]; AI <- AC  
                 T5: AC <- AI + BI + c; wrn; wrz; wrc; wrv;
+
+
             
             - (IND,X): ADC ($36,X) (61 36)              
                 T2: BI <- MEM[MAR]; AI <- X

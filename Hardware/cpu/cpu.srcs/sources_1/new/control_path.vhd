@@ -92,8 +92,9 @@ BEGIN
             WHEN ABSOLUTE =>
               next_state <= T4;
 
-            WHEN ABSOLUTE_X =>
+            WHEN ABSOLUTE_X | ABSOLUTE_Y =>
               next_state <= T4;
+
             WHEN OTHERS =>
           END CASE;
         END IF;
@@ -107,7 +108,7 @@ BEGIN
               next_state <= T5;
             WHEN ABSOLUTE =>
               next_state <= T5;
-            WHEN ABSOLUTE_X =>
+            WHEN ABSOLUTE_X | ABSOLUTE_Y =>
               next_state <= T5;
             WHEN OTHERS =>
           END CASE;
@@ -120,7 +121,7 @@ BEGIN
               next_state <= T0;
             WHEN ABSOLUTE =>
               next_state <= T0;
-            WHEN ABSOLUTE_X =>
+            WHEN ABSOLUTE_X | ABSOLUTE_Y =>
               next_state <= T6;
             WHEN OTHERS =>
           END CASE;
@@ -129,7 +130,7 @@ BEGIN
       WHEN T6 =>
         IF decInstruction.instruction_type = ADC THEN
           CASE (decInstruction.addressing_mode) IS
-            WHEN ABSOLUTE_X =>
+            WHEN ABSOLUTE_X | ABSOLUTE_Y =>
               next_state <= T0;
 
             WHEN OTHERS =>
@@ -141,7 +142,7 @@ BEGIN
 
   END PROCESS;
 
-  -- ! Note to self: every state change requires specifying the address
+  -- ! Eevery state change requires specifying the address
   -- ! The data will be available in the next cycle this way
   CONTROL_SIGNALS : PROCESS (state, rst)
     VARIABLE u_op : MICRO_OPERATION;
@@ -168,8 +169,11 @@ BEGIN
         IF decInstruction.instruction_type = ADC THEN
           CASE (decInstruction.addressing_mode) IS
             WHEN IMM =>
-              u_op.mux_ai := s_ACC;
+              u_op.mux_sb := s_ACC;
+              u_op.mux_ai := s_SB;
               u_op.ai_en := '1';
+
+              u_op.mux_db := s_DATA;
               u_op.mux_bi := s_DB;
               u_op.bi_en := '1';
             WHEN ZERO_PAGE =>
@@ -181,8 +185,11 @@ BEGIN
               u_op.ma_en := '1';
 
             WHEN ZERO_PAGE_X =>
-              u_op.mux_ai := s_RGX;
+              u_op.mux_sb := s_RGX;
+              u_op.mux_ai := s_SB;
               u_op.ai_en := '1';
+
+              u_op.mux_db := s_DATA;
               u_op.mux_bi := s_DB;
               u_op.bi_en := '1';
 
@@ -198,7 +205,7 @@ BEGIN
               u_op.mux_adl := s_DATA;
               u_op.abl_en := '1';
 
-            WHEN ABSOLUTE_X =>
+            WHEN ABSOLUTE_X | ABSOLUTE_Y =>
               ------- Addressing ------- 
               u_op.mux_addr := s_MA;
               -------------------------- 
@@ -207,11 +214,14 @@ BEGIN
               u_op.mux_ma := s_PC;
               u_op.ma_en := '1';
 
-              u_op.mux_ai := s_RGX;
+              u_op.mux_sb := s_RGX WHEN decInstruction.addressing_mode = ABSOLUTE_X ELSE
+              s_RGY;
+              u_op.mux_ai := s_sb;
               u_op.ai_en := '1';
-              u_op.mux_bi := s_DB;
-              u_op.bi_en := '1';
 
+              u_op.mux_db := s_DATA;
+              u_op.mux_bi := s_db;
+              u_op.bi_en := '1';
             WHEN OTHERS =>
           END CASE;
 
@@ -224,8 +234,11 @@ BEGIN
             WHEN IMM =>
               store_adc(u_op);
             WHEN ZERO_PAGE =>
-              u_op.mux_ai := s_ACC;
+              u_op.mux_sb := s_ACC;
+              u_op.mux_ai := s_SB;
               u_op.ai_en := '1';
+
+              u_op.mux_db := s_DATA;
               u_op.mux_bi := s_DB;
               u_op.bi_en := '1';
 
@@ -244,7 +257,7 @@ BEGIN
               u_op.mux_adh := s_DATA;
               u_op.abh_en := '1';
 
-            WHEN ABSOLUTE_X =>
+            WHEN ABSOLUTE_X | ABSOLUTE_Y =>
               ------- Addressing ------- 
               u_op.mux_addr := s_MA;
               -------------------------- 
@@ -275,8 +288,11 @@ BEGIN
               store_adc(u_op);
 
             WHEN ZERO_PAGE_X =>
-              u_op.mux_ai := s_ACC;
+              u_op.mux_sb := s_ACC;
+              u_op.mux_ai := s_SB;
               u_op.ai_en := '1';
+
+              u_op.mux_db := s_DATA;
               u_op.mux_bi := s_DB;
               u_op.bi_en := '1';
 
@@ -285,12 +301,15 @@ BEGIN
               u_op.mux_addr := s_AB;
               -------------------------- 
 
-              u_op.mux_ai := s_ACC;
+              u_op.mux_sb := s_ACC;
+              u_op.mux_ai := s_SB;
               u_op.ai_en := '1';
+
+              u_op.mux_db := s_DATA;
               u_op.mux_bi := s_DB;
               u_op.bi_en := '1';
 
-            WHEN ABSOLUTE_X =>
+            WHEN ABSOLUTE_X | ABSOLUTE_Y =>
               ------- Addressing ------- 
               u_op.mux_addr := s_AB;
               -------------------------- 
@@ -311,10 +330,12 @@ BEGIN
             WHEN ABSOLUTE =>
               store_adc(u_op);
 
-            WHEN ABSOLUTE_X =>
-
-              u_op.mux_ai := s_ACC;
+            WHEN ABSOLUTE_X | ABSOLUTE_Y =>
+              u_op.mux_sb := s_ACC;
+              u_op.mux_ai := s_SB;
               u_op.ai_en := '1';
+
+              u_op.mux_db := s_DATA;
               u_op.mux_bi := s_DB;
               u_op.bi_en := '1';
             WHEN OTHERS =>
