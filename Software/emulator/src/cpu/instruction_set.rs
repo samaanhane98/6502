@@ -18,12 +18,12 @@ pub enum AddressingMode {
 pub fn instruction_cycles(instruction: u8) -> u8 {
     match instruction {
         0x0 => 0,
-        0x69 | 0x29 | 0x0A | 0x90 => 2,
-        0x65 | 0x25 => 3,
-        0x75 | 0x6D | 0x7D | 0x79 | 0x35 | 0x2D | 0x3D | 0x39 => 4,
-        0x71 | 0x31 | 0x06 => 5,
-        0x61 | 0x21 | 0x16 | 0x0E => 6,
-        0x1E => 7,
+        0x69 | 0x29 | 0x0A | 0x90 => 4,
+        0x65 | 0x25 => 5,
+        0x75 | 0x6D | 0x7D | 0x79 | 0x35 | 0x2D | 0x3D | 0x39 => 6,
+        0x71 | 0x31 | 0x06 => 7,
+        0x61 | 0x21 | 0x16 | 0x0E => 8,
+        0x1E => 9,
         _ => unimplemented!(),
     }
 }
@@ -199,11 +199,7 @@ pub fn adc(cpu: &mut Processor, mode: AddressingMode) {
             cpu.acc = new_acc as u8;
         }
         AddressingMode::AbsoluteX(address) => {
-            // Page cross condition
             let mem_address = address + cpu.regx as u16;
-            if (mem_address & 0xFF00) != (address & 0xFF00) {
-                cpu.state = CpuState::PageCross(1);
-            }
 
             let carry = match cpu.status.contains(Flags::CARRY) {
                 true => 1,
@@ -223,11 +219,6 @@ pub fn adc(cpu: &mut Processor, mode: AddressingMode) {
 
         AddressingMode::AbsoluteY(address) => {
             let mem_address = address + cpu.regy as u16;
-
-            // Page cross condition
-            if (mem_address & 0xFF00) != (address & 0xFF00) {
-                cpu.state = CpuState::PageCross(1);
-            }
 
             let carry = match cpu.status.contains(Flags::CARRY) {
                 true => 1,
@@ -279,9 +270,6 @@ pub fn adc(cpu: &mut Processor, mode: AddressingMode) {
             ]);
 
             let mem_address: u16 = zero_page_address + cpu.regy as u16;
-            if (mem_address & 0xFF00) != (zero_page_address & 0xFF00) {
-                cpu.state = CpuState::PageCross(1);
-            }
 
             let mem_val = cpu.memory[mem_address as usize];
 
@@ -344,11 +332,7 @@ pub fn and(cpu: &mut Processor, mode: AddressingMode) {
             cpu.acc = new_acc;
         }
         AddressingMode::AbsoluteX(address) => {
-            // Page cross condition
             let mem_address = address + cpu.regx as u16;
-            if (mem_address & 0xFF00) != (address & 0xFF00) {
-                cpu.state = CpuState::PageCross(1);
-            }
 
             let mem_val = cpu.memory[mem_address as usize];
 
@@ -363,9 +347,6 @@ pub fn and(cpu: &mut Processor, mode: AddressingMode) {
         AddressingMode::AbsoluteY(address) => {
             // Page cross condition
             let mem_address = address + cpu.regy as u16;
-            if (mem_address & 0xFF00) != (address & 0xFF00) {
-                cpu.state = CpuState::PageCross(1);
-            }
 
             let mem_val = cpu.memory[mem_address as usize];
 
@@ -402,9 +383,6 @@ pub fn and(cpu: &mut Processor, mode: AddressingMode) {
             ]);
 
             let mem_address: u16 = zero_page_address + cpu.regy as u16;
-            if (mem_address & 0xFF00) != (zero_page_address & 0xFF00) {
-                cpu.state = CpuState::PageCross(1);
-            }
 
             let mem_val = cpu.memory[mem_address as usize];
 
@@ -479,11 +457,6 @@ pub fn asl(cpu: &mut Processor, mode: AddressingMode) {
         AddressingMode::AbsoluteX(address) => {
             let mem_address = address + cpu.regx as u16;
 
-            // Page cross condition
-            if (mem_address & 0xFF00) != (address & 0xFF00) {
-                cpu.state = CpuState::PageCross(1);
-            }
-
             let mut mem_val = cpu.memory[mem_address as usize];
 
             cpu.status
@@ -501,6 +474,7 @@ pub fn asl(cpu: &mut Processor, mode: AddressingMode) {
     }
 }
 
+// ! Check page cross here
 pub fn bcc(cpu: &mut Processor, offset: u8) {
     match cpu.status.contains(Flags::CARRY) {
         true => {
