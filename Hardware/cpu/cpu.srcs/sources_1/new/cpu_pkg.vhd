@@ -49,7 +49,7 @@ PACKAGE cpu_pkg IS
   -- Instruction types
   TYPE ADDRESSING_MODE IS (IMPL, IMM, ZERO_PAGE, ZERO_PAGE_X, ABSOLUTE, ABSOLUTE_X, ABSOLUTE_Y, INDEXED_INDIRECT, INDIRECT_INDEXED);
   TYPE INSTRUCTION_TYPE IS (
-    NOP, ADC
+    NOP, ADC, LDA
   );
 
   SUBTYPE INSTRUCTION IS STD_LOGIC_VECTOR(7 DOWNTO 0);
@@ -209,8 +209,13 @@ PACKAGE BODY cpu_pkg IS
         o_instr.instruction_type := ADC;
         o_instr.addressing_mode := INDIRECT_INDEXED;
         o_instr.instruction_length := 2;
-      WHEN OTHERS =>
 
+      WHEN x"A9" =>
+        o_instr.instruction_type := LDA;
+        o_instr.addressing_mode := IMM;
+        o_instr.instruction_length := 2;
+
+      WHEN OTHERS =>
         o_instr.instruction_type := NOP;
         o_instr.addressing_mode := IMPL;
         o_instr.instruction_length := 1;
@@ -240,6 +245,7 @@ PACKAGE BODY cpu_pkg IS
   BEGIN
     CASE it IS
       WHEN ADC => RETURN "Add with Carry";
+      WHEN LDA => RETURN "Load Accumulator";
       WHEN NOP => RETURN "No Operation";
       WHEN OTHERS => RETURN "UNKNOWN";
     END CASE;

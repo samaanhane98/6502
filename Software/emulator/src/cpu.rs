@@ -8,7 +8,7 @@ use instruction_set::*;
 mod test;
 
 bitflags! {
-    #[derive(Debug)]
+    #[derive(Debug, Clone, Copy)]
     pub struct Flags: u8 {
         const CARRY = 0b0000_0001;
         const ZERO = 0b0000_0010;
@@ -20,7 +20,7 @@ bitflags! {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum CpuState {
     Busy(u8),
     Idle,
@@ -30,6 +30,7 @@ pub enum CpuState {
 // $0000-$00FF: Zero Page
 // $0100-$01FF: System stack
 // $FFFA-$FFFF: reserved
+#[derive(Clone, Copy)]
 pub struct Processor {
     pub memory: [u8; 0xFFFF],
     pub pc: u16,
@@ -117,5 +118,34 @@ impl Processor {
                 }
             },
         }
+    }
+}
+
+pub fn compute_address(cpu: Processor, mode: AddressingMode) -> usize {
+    match mode {
+        AddressingMode::Immediate(address) => address as usize,
+        AddressingMode::ZeroPage(address) => address as usize,
+        AddressingMode::ZeroPageX(address) => address.wrapping_add(cpu.regx) as usize,
+        AddressingMode::Absolute(address) => address as usize,
+        AddressingMode::AbsoluteX(address) => (address + cpu.regx as u16) as usize,
+        AddressingMode::AbsoluteY(address) => (address + cpu.regy as u16) as usize,
+        AddressingMode::IndexedIndirect(pointer) => {
+            let zero_page_address = cpu.memory[pointer as usize];
+            let mem_address = u16::from_le_bytes([
+                cpu.memory[zero_page_address.wrapping_add(cpu.regx) as usize],
+                cpu.memory[zero_page_address.wrapping_add(cpu.regx).wrapping_add(1) as usize],
+            ]);
+
+            mem_address as usize
+        }
+        AddressingMode::IndirectIndexed(pointer) => {
+            let zero_page_address = u16::from_le_bytes([
+                cpu.memory[pointer as usize],
+                cpu.memory[pointer as usize + 1],
+            ]);
+
+            (zero_page_address + cpu.regy as u16) as usize
+        }
+        _ => unimplemented!(),
     }
 }

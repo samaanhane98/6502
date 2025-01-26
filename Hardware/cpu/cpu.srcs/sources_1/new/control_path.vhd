@@ -95,8 +95,13 @@ BEGIN
 
             WHEN OTHERS =>
           END CASE;
+        ELSIF decInstruction.instruction_type = LDA THEN
+          CASE (decInstruction.addressing_mode) IS
+            WHEN IMM =>
+              next_state <= T0;
+            WHEN OTHERS =>
+          END CASE;
         END IF;
-
       WHEN T4 =>
         IF decInstruction.instruction_type = ADC THEN
           CASE (decInstruction.addressing_mode) IS
@@ -264,6 +269,13 @@ BEGIN
             WHEN OTHERS =>
           END CASE;
 
+        ELSIF decInstruction.instruction_type = LDA THEN
+          CASE (decInstruction.addressing_mode) IS
+            WHEN IMM =>
+              u_op.mux_acc := s_DB;
+              u_op.acc_en := '1';
+            WHEN OTHERS =>
+          END CASE;
         END IF;
 
       WHEN T3 =>

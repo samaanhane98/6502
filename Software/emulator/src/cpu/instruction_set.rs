@@ -1,6 +1,6 @@
 use std::ops::Shl;
 
-use super::{CpuState, Flags, Processor};
+use super::{compute_address, CpuState, Flags, Processor};
 
 #[derive(Debug)]
 pub enum AddressingMode {
@@ -18,11 +18,11 @@ pub enum AddressingMode {
 pub fn instruction_cycles(instruction: u8) -> u8 {
     match instruction {
         0x0 => 0,
-        0x69 | 0x29 | 0x0A | 0x90 => 4,
-        0x65 | 0x25 => 5,
-        0x75 | 0x6D | 0x7D | 0x79 | 0x35 | 0x2D | 0x3D | 0x39 => 6,
-        0x71 | 0x31 | 0x06 => 7,
-        0x61 | 0x21 | 0x16 | 0x0E => 8,
+        0x69 | 0x29 | 0x0A | 0x90 | 0xA9 => 4,
+        0x65 | 0x25 | 0xA5 => 5,
+        0x75 | 0x6D | 0x7D | 0x79 | 0x35 | 0x2D | 0x3D | 0x39 | 0xB5 | 0xAD => 6,
+        0x71 | 0x31 | 0x06 | 0xBD | 0xB9 => 7,
+        0x61 | 0x21 | 0x16 | 0x0E | 0xA1 | 0xB1 => 8,
         0x1E => 9,
         _ => unimplemented!(),
     }
@@ -129,6 +129,34 @@ pub fn execute(cpu: &mut Processor) {
         0x90 => bcc(cpu, pc_data[1]),
         _ => {}
     }
+
+    // ? lda
+    match pc_data[0] {
+        0xA9 => lda(cpu, AddressingMode::Immediate(pc_data[1])),
+        0xA5 => lda(cpu, AddressingMode::ZeroPage(pc_data[1])),
+        0xB5 => lda(cpu, AddressingMode::ZeroPageX(pc_data[1])),
+        0xAD => {
+            lda(
+                cpu,
+                AddressingMode::Absolute(u16::from_le_bytes([pc_data[1], pc_data[2]])),
+            );
+        }
+        0xBD => {
+            lda(
+                cpu,
+                AddressingMode::AbsoluteX(u16::from_le_bytes([pc_data[1], pc_data[2]])),
+            );
+        }
+        0xB9 => {
+            lda(
+                cpu,
+                AddressingMode::AbsoluteY(u16::from_le_bytes([pc_data[1], pc_data[2]])),
+            );
+        }
+        0xA1 => lda(cpu, AddressingMode::IndexedIndirect(pc_data[1])),
+        0xB1 => lda(cpu, AddressingMode::IndirectIndexed(pc_data[1])),
+        _ => {}
+    }
 }
 
 pub fn adc(cpu: &mut Processor, mode: AddressingMode) {
@@ -148,29 +176,12 @@ pub fn adc(cpu: &mut Processor, mode: AddressingMode) {
 
             cpu.acc = new_acc as u8;
         }
-        AddressingMode::ZeroPage(address) => {
+        _ => {
             let carry = match cpu.status.contains(Flags::CARRY) {
                 true => 1,
                 false => 0,
             };
-
-            let mem_val = cpu.memory[address as usize];
-
-            let new_acc: u16 = cpu.acc as u16 + mem_val as u16 + carry as u16;
-
-            cpu.status.set(Flags::CARRY, new_acc > 0xFF);
-            cpu.status.set(Flags::ZERO, new_acc == 0x00);
-            cpu.status
-                .set(Flags::NEGATIVE, new_acc & 0b1000_0000 == 0b1000_0000);
-
-            cpu.acc = new_acc as u8;
-        }
-        AddressingMode::ZeroPageX(address) => {
-            let carry = match cpu.status.contains(Flags::CARRY) {
-                true => 1,
-                false => 0,
-            };
-            let mem_address = address.wrapping_add(cpu.regx);
+            let mem_address = compute_address(*cpu, mode);
             let mem_val = cpu.memory[mem_address as usize];
 
             let new_acc: u16 = cpu.acc as u16 + mem_val as u16 + carry as u16;
@@ -182,107 +193,6 @@ pub fn adc(cpu: &mut Processor, mode: AddressingMode) {
 
             cpu.acc = new_acc as u8;
         }
-        AddressingMode::Absolute(address) => {
-            let carry = match cpu.status.contains(Flags::CARRY) {
-                true => 1,
-                false => 0,
-            };
-            let mem_val = cpu.memory[address as usize];
-
-            let new_acc: u16 = cpu.acc as u16 + mem_val as u16 + carry as u16;
-
-            cpu.status.set(Flags::CARRY, new_acc > 0xFF);
-            cpu.status.set(Flags::ZERO, new_acc == 0x00);
-            cpu.status
-                .set(Flags::NEGATIVE, new_acc & 0b1000_0000 == 0b1000_0000);
-
-            cpu.acc = new_acc as u8;
-        }
-        AddressingMode::AbsoluteX(address) => {
-            let mem_address = address + cpu.regx as u16;
-
-            let carry = match cpu.status.contains(Flags::CARRY) {
-                true => 1,
-                false => 0,
-            };
-            let mem_val = cpu.memory[mem_address as usize];
-
-            let new_acc: u16 = cpu.acc as u16 + mem_val as u16 + carry as u16;
-
-            cpu.status.set(Flags::CARRY, new_acc > 0xFF);
-            cpu.status.set(Flags::ZERO, new_acc == 0x00);
-            cpu.status
-                .set(Flags::NEGATIVE, new_acc & 0b1000_0000 == 0b1000_0000);
-
-            cpu.acc = new_acc as u8;
-        }
-
-        AddressingMode::AbsoluteY(address) => {
-            let mem_address = address + cpu.regy as u16;
-
-            let carry = match cpu.status.contains(Flags::CARRY) {
-                true => 1,
-                false => 0,
-            };
-            let mem_val = cpu.memory[mem_address as usize];
-
-            let new_acc: u16 = cpu.acc as u16 + mem_val as u16 + carry as u16;
-
-            cpu.status.set(Flags::CARRY, new_acc > 0xFF);
-            cpu.status.set(Flags::ZERO, new_acc == 0x00);
-            cpu.status
-                .set(Flags::NEGATIVE, new_acc & 0b1000_0000 == 0b1000_0000);
-
-            cpu.acc = new_acc as u8;
-        }
-        AddressingMode::IndexedIndirect(pointer) => {
-            let carry = match cpu.status.contains(Flags::CARRY) {
-                true => 1,
-                false => 0,
-            };
-
-            let zero_page_address = cpu.memory[pointer as usize];
-            let mem_address = u16::from_le_bytes([
-                cpu.memory[zero_page_address.wrapping_add(cpu.regx) as usize],
-                cpu.memory[zero_page_address.wrapping_add(cpu.regx).wrapping_add(1) as usize],
-            ]);
-
-            let mem_val = cpu.memory[mem_address as usize];
-
-            let new_acc: u16 = cpu.acc as u16 + mem_val as u16 + carry as u16;
-
-            cpu.status.set(Flags::CARRY, new_acc > 0xFF);
-            cpu.status.set(Flags::ZERO, new_acc == 0x00);
-            cpu.status
-                .set(Flags::NEGATIVE, new_acc & 0b1000_0000 == 0b1000_0000);
-
-            cpu.acc = new_acc as u8;
-        }
-        AddressingMode::IndirectIndexed(pointer) => {
-            let carry = match cpu.status.contains(Flags::CARRY) {
-                true => 1,
-                false => 0,
-            };
-
-            let zero_page_address = u16::from_le_bytes([
-                cpu.memory[pointer as usize],
-                cpu.memory[pointer as usize + 1],
-            ]);
-
-            let mem_address: u16 = zero_page_address + cpu.regy as u16;
-
-            let mem_val = cpu.memory[mem_address as usize];
-
-            let new_acc: u16 = cpu.acc as u16 + mem_val as u16 + carry as u16;
-
-            cpu.status.set(Flags::CARRY, new_acc > 0xFF);
-            cpu.status.set(Flags::ZERO, new_acc == 0x00);
-            cpu.status
-                .set(Flags::NEGATIVE, new_acc & 0b1000_0000 == 0b1000_0000);
-
-            cpu.acc = new_acc as u8;
-        }
-        _ => unreachable!(),
     }
 }
 
@@ -297,19 +207,8 @@ pub fn and(cpu: &mut Processor, mode: AddressingMode) {
 
             cpu.acc = new_acc;
         }
-        AddressingMode::ZeroPage(address) => {
-            let mem_val = cpu.memory[address as usize];
-
-            let new_acc: u8 = cpu.acc & mem_val;
-
-            cpu.status.set(Flags::ZERO, new_acc == 0x00);
-            cpu.status
-                .set(Flags::NEGATIVE, new_acc & 0b1000_0000 == 0b1000_0000);
-
-            cpu.acc = new_acc;
-        }
-        AddressingMode::ZeroPageX(address) => {
-            let mem_address = address.wrapping_add(cpu.regx);
+        _ => {
+            let mem_address = compute_address(*cpu, mode);
             let mem_val = cpu.memory[mem_address as usize];
 
             let new_acc: u8 = cpu.acc & mem_val;
@@ -320,81 +219,6 @@ pub fn and(cpu: &mut Processor, mode: AddressingMode) {
 
             cpu.acc = new_acc;
         }
-        AddressingMode::Absolute(address) => {
-            let mem_val = cpu.memory[address as usize];
-
-            let new_acc: u8 = cpu.acc & mem_val;
-
-            cpu.status.set(Flags::ZERO, new_acc == 0x00);
-            cpu.status
-                .set(Flags::NEGATIVE, new_acc & 0b1000_0000 == 0b1000_0000);
-
-            cpu.acc = new_acc;
-        }
-        AddressingMode::AbsoluteX(address) => {
-            let mem_address = address + cpu.regx as u16;
-
-            let mem_val = cpu.memory[mem_address as usize];
-
-            let new_acc: u8 = cpu.acc & mem_val;
-
-            cpu.status.set(Flags::ZERO, new_acc == 0x00);
-            cpu.status
-                .set(Flags::NEGATIVE, new_acc & 0b1000_0000 == 0b1000_0000);
-
-            cpu.acc = new_acc;
-        }
-        AddressingMode::AbsoluteY(address) => {
-            // Page cross condition
-            let mem_address = address + cpu.regy as u16;
-
-            let mem_val = cpu.memory[mem_address as usize];
-
-            let new_acc: u8 = cpu.acc & mem_val;
-
-            cpu.status.set(Flags::ZERO, new_acc == 0x00);
-            cpu.status
-                .set(Flags::NEGATIVE, new_acc & 0b1000_0000 == 0b1000_0000);
-
-            cpu.acc = new_acc;
-        }
-        AddressingMode::IndexedIndirect(pointer) => {
-            let zero_page_address = cpu.memory[pointer as usize];
-
-            let mem_address = u16::from_le_bytes([
-                cpu.memory[zero_page_address.wrapping_add(cpu.regx) as usize],
-                cpu.memory[zero_page_address.wrapping_add(cpu.regx).wrapping_add(1) as usize],
-            ]);
-
-            let mem_val = cpu.memory[mem_address as usize];
-
-            let new_acc: u8 = cpu.acc & mem_val;
-
-            cpu.status.set(Flags::ZERO, new_acc == 0x00);
-            cpu.status
-                .set(Flags::NEGATIVE, new_acc & 0b1000_0000 == 0b1000_0000);
-
-            cpu.acc = new_acc;
-        }
-        AddressingMode::IndirectIndexed(pointer) => {
-            let zero_page_address = u16::from_le_bytes([
-                cpu.memory[pointer as usize],
-                cpu.memory[pointer as usize + 1],
-            ]);
-
-            let mem_address: u16 = zero_page_address + cpu.regy as u16;
-
-            let mem_val = cpu.memory[mem_address as usize];
-
-            let new_acc: u8 = cpu.acc & mem_val;
-
-            cpu.status.set(Flags::ZERO, new_acc == 0x00);
-            cpu.status
-                .set(Flags::NEGATIVE, new_acc & 0b1000_0000 == 0b1000_0000);
-
-            cpu.acc = new_acc;
-        }
-        _ => unreachable!(),
     }
 }
 
@@ -412,24 +236,9 @@ pub fn asl(cpu: &mut Processor, mode: AddressingMode) {
 
             cpu.acc = new_acc;
         }
-        AddressingMode::ZeroPage(address) => {
-            let mut mem_val = cpu.memory[address as usize];
-            cpu.status
-                .set(Flags::CARRY, mem_val & 0b1000_0000 == 0b1000_0000);
-
-            mem_val = mem_val.shl(1);
-
-            cpu.status.set(Flags::ZERO, mem_val == 0x00);
-            cpu.status
-                .set(Flags::NEGATIVE, mem_val & 0b1000_0000 == 0b1000_0000);
-
-            cpu.memory[address as usize] = mem_val;
-        }
-        AddressingMode::ZeroPageX(address) => {
-            let mem_address = address.wrapping_add(cpu.regx);
-
+        _ => {
+            let mem_address = compute_address(*cpu, mode);
             let mut mem_val = cpu.memory[mem_address as usize];
-
             cpu.status
                 .set(Flags::CARRY, mem_val & 0b1000_0000 == 0b1000_0000);
 
@@ -441,36 +250,25 @@ pub fn asl(cpu: &mut Processor, mode: AddressingMode) {
 
             cpu.memory[mem_address as usize] = mem_val;
         }
-        AddressingMode::Absolute(address) => {
-            let mut mem_val = cpu.memory[address as usize];
+    }
+}
+
+pub fn lda(cpu: &mut Processor, mode: AddressingMode) {
+    match mode {
+        AddressingMode::Immediate(data) => {
+            cpu.status.set(Flags::ZERO, data == 0x00);
             cpu.status
-                .set(Flags::CARRY, mem_val & 0b1000_0000 == 0b1000_0000);
-
-            mem_val = mem_val.shl(1);
-
+                .set(Flags::NEGATIVE, data & 0b1000_0000 == 0b1000_0000);
+            cpu.acc = data;
+        }
+        _ => {
+            let mem_address = compute_address(*cpu, mode);
+            let mem_val = cpu.memory[mem_address as usize];
             cpu.status.set(Flags::ZERO, mem_val == 0x00);
             cpu.status
                 .set(Flags::NEGATIVE, mem_val & 0b1000_0000 == 0b1000_0000);
-
-            cpu.memory[address as usize] = mem_val;
+            cpu.acc = mem_val;
         }
-        AddressingMode::AbsoluteX(address) => {
-            let mem_address = address + cpu.regx as u16;
-
-            let mut mem_val = cpu.memory[mem_address as usize];
-
-            cpu.status
-                .set(Flags::CARRY, mem_val & 0b1000_0000 == 0b1000_0000);
-
-            mem_val = mem_val.shl(1);
-
-            cpu.status.set(Flags::ZERO, mem_val == 0x00);
-            cpu.status
-                .set(Flags::NEGATIVE, mem_val & 0b1000_0000 == 0b1000_0000);
-
-            cpu.memory[mem_address as usize] = mem_val;
-        }
-        _ => unreachable!(),
     }
 }
 
