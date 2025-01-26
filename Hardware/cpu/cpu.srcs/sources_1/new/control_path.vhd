@@ -106,6 +106,8 @@ BEGIN
           CASE (decInstruction.addressing_mode) IS
             WHEN ZERO_PAGE =>
               next_state <= T0;
+            WHEN ZERO_PAGE_X =>
+              next_state <= T4;
             WHEN OTHERS =>
           END CASE;
         END IF;
@@ -128,8 +130,8 @@ BEGIN
           END CASE;
         ELSIF decInstruction.instruction_type = LDA THEN
           CASE (decInstruction.addressing_mode) IS
-            WHEN ZERO_PAGE =>
-              next_state <= T4;
+            WHEN ZERO_PAGE_X =>
+              next_state <= T0;
             WHEN OTHERS =>
           END CASE;
         END IF;
@@ -172,12 +174,19 @@ BEGIN
         END IF;
       WHEN OTHERS =>
     END CASE;
-
   END PROCESS;
+
+  -- CONTROL_SIGNALS : PROCESS (state, rst)
+  -- BEGIN
+  -- END PROCESS;
+
+  -- ADC: process (state, rst)
+  -- begin
+  -- end process;
 
   -- ! Eevery state change requires specifying the address
   -- ! The data will be available in the next cycle this way
-  CONTROL_SIGNALS : PROCESS (state, rst)
+  SIGNALS : PROCESS (state, rst)
     VARIABLE u_op : MICRO_OPERATION;
 
   BEGIN
@@ -297,6 +306,15 @@ BEGIN
               u_op.mux_ma := s_DATA;
               u_op.ma_en := '1';
 
+            WHEN ZERO_PAGE_X =>
+              u_op.mux_sb := s_RGX;
+              u_op.mux_ai := s_SB;
+              u_op.ai_en := '1';
+
+              u_op.mux_db := s_DATA;
+              u_op.mux_bi := s_DB;
+              u_op.bi_en := '1';
+
             WHEN OTHERS =>
           END CASE;
         END IF;
@@ -384,6 +402,14 @@ BEGIN
             WHEN ZERO_PAGE =>
               u_op.mux_acc := s_DB;
               u_op.acc_en := '1';
+            WHEN ZERO_PAGE_X =>
+              ------- Addressing ------- 
+              u_op.mux_addr := s_AB;
+              -------------------------- 
+
+              u_op.alu_op := AD;
+              u_op.mux_adl := s_ALU;
+              u_op.abl_en := '1';
             WHEN OTHERS =>
           END CASE;
         END IF;
@@ -457,6 +483,14 @@ BEGIN
               u_op.mux_db := s_DATA;
               u_op.mux_bi := s_DB;
               u_op.bi_en := '1';
+
+            WHEN OTHERS =>
+          END CASE;
+        ELSIF decInstruction.instruction_type = LDA THEN
+          CASE (decInstruction.addressing_mode) IS
+            WHEN ZERO_PAGE_X =>
+              u_op.mux_acc := s_DB;
+              u_op.acc_en := '1';
 
             WHEN OTHERS =>
           END CASE;

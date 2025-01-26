@@ -219,6 +219,11 @@ PACKAGE BODY cpu_pkg IS
         o_instr.instruction_type := LDA;
         o_instr.addressing_mode := ZERO_PAGE;
         o_instr.instruction_length := 2;
+
+      WHEN x"B5" =>
+        o_instr.instruction_type := LDA;
+        o_instr.addressing_mode := ZERO_PAGE_X;
+        o_instr.instruction_length := 2;
       WHEN OTHERS =>
         o_instr.instruction_type := NOP;
         o_instr.addressing_mode := IMPL;
