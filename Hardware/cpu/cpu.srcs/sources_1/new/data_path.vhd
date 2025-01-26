@@ -100,6 +100,7 @@ BEGIN
 
   -- REGISTERS
   MA_MUX : MA_d <= PCH_q & PCL_q WHEN u_operation.mux_ma = s_PC ELSE
+  x"00" & alu_res WHEN u_operation.mux_ma = s_ALU ELSE
   x"00" & data_in WHEN u_operation.mux_ma = s_DATA;
 
   MA_REGISTER : ENTITY work.bits_register

@@ -47,7 +47,7 @@ PACKAGE cpu_pkg IS
   TYPE CPU_STATE IS (T0, T1, T2, T3, T4, T5, T6, T7);
 
   -- Instruction types
-  TYPE ADDRESSING_MODE IS (IMPL, IMM, ZERO_PAGE, ZERO_PAGE_X, ABSOLUTE, ABSOLUTE_X, ABSOLUTE_Y, INDEXED_INDIRECT);
+  TYPE ADDRESSING_MODE IS (IMPL, IMM, ZERO_PAGE, ZERO_PAGE_X, ABSOLUTE, ABSOLUTE_X, ABSOLUTE_Y, INDEXED_INDIRECT, INDIRECT_INDEXED);
   TYPE INSTRUCTION_TYPE IS (
     NOP, ADC
   );
@@ -75,7 +75,7 @@ PACKAGE cpu_pkg IS
 
   TYPE mux_pc_t IS (s_INCR);
   TYPE mux_addr_t IS (s_MA, s_AB);
-  TYPE mux_ma_t IS (s_PC, s_DATA);
+  TYPE mux_ma_t IS (s_PC, s_ALU, s_DATA);
   TYPE mux_adl_t IS (s_PC, s_ALU, s_DATA);
   TYPE mux_adh_t IS (s_PC, s_DATA, s_ALU, s_ZERO);
   TYPE mux_ai_t IS (s_SB, s_ZERO);
@@ -205,6 +205,10 @@ PACKAGE BODY cpu_pkg IS
         o_instr.addressing_mode := INDEXED_INDIRECT;
         o_instr.instruction_length := 2;
 
+      WHEN x"71" =>
+        o_instr.instruction_type := ADC;
+        o_instr.addressing_mode := INDIRECT_INDEXED;
+        o_instr.instruction_length := 2;
       WHEN OTHERS =>
 
         o_instr.instruction_type := NOP;
@@ -225,6 +229,8 @@ PACKAGE BODY cpu_pkg IS
       WHEN ABSOLUTE => RETURN "Absolute";
       WHEN ABSOLUTE_X => RETURN "Absolute,X";
       WHEN ABSOLUTE_Y => RETURN "Absolute,Y";
+      WHEN INDEXED_INDIRECT => RETURN "Indexed Indirect";
+      WHEN INDEXED_INDIRECT => RETURN "Indirect Indexed";
       WHEN OTHERS => RETURN "UNKNOWN";
     END CASE;
   END FUNCTION;
