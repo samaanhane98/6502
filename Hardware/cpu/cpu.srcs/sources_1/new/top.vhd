@@ -31,7 +31,8 @@ ENTITY top IS
 END top;
 
 ARCHITECTURE behavioral OF top IS
-  SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"A9", 1 => x"10", OTHERS => (OTHERS => '0'));
+  -- TODO: status signals not yet set
+  SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"A5", 1 => x"10", 16 => x"0D", OTHERS => (OTHERS => '0'));
 
   SIGNAL data_in : STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL data_out : STD_LOGIC_VECTOR(7 DOWNTO 0);

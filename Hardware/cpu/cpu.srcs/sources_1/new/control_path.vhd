@@ -71,6 +71,13 @@ BEGIN
       WHEN T2 =>
         IF decInstruction.instruction_type = ADC THEN
           next_state <= T3;
+        ELSIF decInstruction.instruction_type = LDA THEN
+          CASE (decInstruction.addressing_mode) IS
+            WHEN IMM =>
+              next_state <= T0;
+            WHEN OTHERS =>
+              next_state <= T3;
+          END CASE;
         ELSE
           next_state <= T0;
         END IF;
@@ -97,11 +104,12 @@ BEGIN
           END CASE;
         ELSIF decInstruction.instruction_type = LDA THEN
           CASE (decInstruction.addressing_mode) IS
-            WHEN IMM =>
+            WHEN ZERO_PAGE =>
               next_state <= T0;
             WHEN OTHERS =>
           END CASE;
         END IF;
+
       WHEN T4 =>
         IF decInstruction.instruction_type = ADC THEN
           CASE (decInstruction.addressing_mode) IS
@@ -116,6 +124,12 @@ BEGIN
             WHEN INDEXED_INDIRECT | INDIRECT_INDEXED =>
               next_state <= T5;
 
+            WHEN OTHERS =>
+          END CASE;
+        ELSIF decInstruction.instruction_type = LDA THEN
+          CASE (decInstruction.addressing_mode) IS
+            WHEN ZERO_PAGE =>
+              next_state <= T4;
             WHEN OTHERS =>
           END CASE;
         END IF;
@@ -274,6 +288,15 @@ BEGIN
             WHEN IMM =>
               u_op.mux_acc := s_DB;
               u_op.acc_en := '1';
+
+            WHEN ZERO_PAGE =>
+              ------- Addressing ------- 
+              u_op.mux_addr := s_MA;
+              -------------------------- 
+
+              u_op.mux_ma := s_DATA;
+              u_op.ma_en := '1';
+
             WHEN OTHERS =>
           END CASE;
         END IF;
@@ -356,7 +379,13 @@ BEGIN
             WHEN OTHERS =>
           END CASE;
 
-        ELSE
+        ELSIF decInstruction.instruction_type = LDA THEN
+          CASE (decInstruction.addressing_mode) IS
+            WHEN ZERO_PAGE =>
+              u_op.mux_acc := s_DB;
+              u_op.acc_en := '1';
+            WHEN OTHERS =>
+          END CASE;
         END IF;
       WHEN T4 =>
         IF decInstruction.instruction_type = ADC THEN
