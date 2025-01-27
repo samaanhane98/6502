@@ -52,6 +52,9 @@ ARCHITECTURE behavioral OF data_path IS
   SIGNAL carry_in : INTEGER;
   SIGNAL alu_res : STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL status_q, status_d : STATUS;
+
+  SIGNAL status_alu : STATUS;
+  SIGNAL status_data_in : STATUS;
 BEGIN
   -- Addressing
   ADDRESS_MUX : address <= MA_q WHEN u_operation.mux_addr = s_MA ELSE
@@ -80,7 +83,6 @@ BEGIN
   alu_res WHEN u_operation.mux_adh = s_ALU ELSE
   data_in WHEN u_operation.mux_adh = s_DATA ELSE
   (OTHERS => '0');
-
   -- ALU
   carry_in <= 1 WHEN status_q(CARRY) = '1' ELSE
     0;
@@ -92,10 +94,10 @@ BEGIN
     op_bi => BI_q,
     carry => carry_in,
     alu_res => alu_res,
-    carry_out => status_d(CARRY),
-    neg_out => status_d(NEGATIVE),
-    zero_out => status_d(ZERO),
-    overflow_out => status_d(OVERFLOW)
+    carry_out => status_alu(CARRY),
+    neg_out => status_alu(NEGATIVE),
+    zero_out => status_alu(ZERO),
+    overflow_out => status_alu(OVERFLOW)
     );
 
   -- REGISTERS
@@ -236,6 +238,23 @@ BEGIN
       q => ACC_q,
       ce => u_operation.acc_en
     );
+
+  status_data_in(ZERO) <= '1' WHEN data_in = x"00" ELSE
+  '0';
+  status_data_in(NEGATIVE) <= '1' WHEN data_in(7) = '1' ELSE
+  '0';
+
+  status_d(CARRY) <= status_alu(CARRY);
+  status_d(ZERO) <= status_alu(ZERO) WHEN u_operation.mux_status = s_ALU ELSE
+  status_data_in(ZERO);
+  status_d(INTERRUPT) <= '0';
+  status_d(DECIMAL) <= '0';
+  status_d(BREAKF) <= '0';
+  status_d(UNUSED) <= '1';
+  status_d(OVERFLOW) <= status_alu(OVERFLOW);
+  status_d(NEGATIVE) <= status_alu(NEGATIVE) WHEN u_operation.mux_status = s_ALU ELSE
+  status_data_in(NEGATIVE);
+
   STATUS_REGISTER : ENTITY work.status_register PORT MAP (
     clk => clk,
     rst => rst,

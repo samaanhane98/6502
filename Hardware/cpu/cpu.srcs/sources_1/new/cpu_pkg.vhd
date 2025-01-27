@@ -81,6 +81,7 @@ PACKAGE cpu_pkg IS
   TYPE mux_ai_t IS (s_SB, s_ZERO);
   TYPE mux_bi_t IS (s_DB);
   TYPE mux_acc_t IS (s_SB, s_DB);
+  TYPE mux_status_t IS (s_ALU, s_DATA);
   TYPE MICRO_OPERATION IS RECORD
     wr_mem : RW; -- WRITE/READ operation
     alu_op : ALU_OPERATION;
@@ -108,6 +109,7 @@ PACKAGE cpu_pkg IS
     mux_ai : mux_ai_t;
     mux_bi : mux_bi_t;
     mux_acc : mux_acc_t;
+    mux_status : mux_status_t;
   END RECORD MICRO_OPERATION;
 
   PROCEDURE reset(VARIABLE u_op : INOUT MICRO_OPERATION);
@@ -143,6 +145,7 @@ PACKAGE BODY cpu_pkg IS
     u_op.mux_ai := s_SB;
     u_op.mux_bi := s_DB;
     u_op.mux_acc := s_SB;
+    u_op.mux_status := s_ALU;
   END PROCEDURE;
 
   PROCEDURE increment_pc(VARIABLE u_op : INOUT MICRO_OPERATION) IS
@@ -224,6 +227,11 @@ PACKAGE BODY cpu_pkg IS
         o_instr.instruction_type := LDA;
         o_instr.addressing_mode := ZERO_PAGE_X;
         o_instr.instruction_length := 2;
+
+      WHEN x"AD" =>
+        o_instr.instruction_type := LDA;
+        o_instr.addressing_mode := ABSOLUTE;
+        o_instr.instruction_length := 3;
       WHEN OTHERS =>
         o_instr.instruction_type := NOP;
         o_instr.addressing_mode := IMPL;

@@ -11,13 +11,13 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0.000000 us"></ZoomStartTime>
-      <ZoomEndTime time="11.634820 us"></ZoomEndTime>
-      <Cursor1Time time="4.246285 us"></Cursor1Time>
+      <ZoomStartTime time="2.333333 us"></ZoomStartTime>
+      <ZoomEndTime time="10.333334 us"></ZoomEndTime>
+      <Cursor1Time time="6.751243 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="153"></NameColumnWidth>
-      <ValueColumnWidth column_width="99"></ValueColumnWidth>
+      <ValueColumnWidth column_width="95"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="8" />
    <wvobject type="logic" fp_name="/top_tb/DUT/clk">
@@ -144,13 +144,25 @@
       <wvobject type="group" fp_name="group64">
          <obj_property name="label">STATUS</obj_property>
          <obj_property name="DisplayName">label</obj_property>
-         <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/status_d">
-            <obj_property name="ElementShortName">status_d[7:0]</obj_property>
-            <obj_property name="ObjectShortName">status_d[7:0]</obj_property>
+         <wvobject type="logic" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/STATUS_REGISTER/clk">
+            <obj_property name="ElementShortName">clk</obj_property>
+            <obj_property name="ObjectShortName">clk</obj_property>
          </wvobject>
-         <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/status_q">
-            <obj_property name="ElementShortName">status_q[7:0]</obj_property>
-            <obj_property name="ObjectShortName">status_q[7:0]</obj_property>
+         <wvobject type="logic" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/STATUS_REGISTER/rst">
+            <obj_property name="ElementShortName">rst</obj_property>
+            <obj_property name="ObjectShortName">rst</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/STATUS_REGISTER/ce">
+            <obj_property name="ElementShortName">ce[7:0]</obj_property>
+            <obj_property name="ObjectShortName">ce[7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/STATUS_REGISTER/d">
+            <obj_property name="ElementShortName">d[7:0]</obj_property>
+            <obj_property name="ObjectShortName">d[7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/STATUS_REGISTER/q">
+            <obj_property name="ElementShortName">q[7:0]</obj_property>
+            <obj_property name="ObjectShortName">q[7:0]</obj_property>
          </wvobject>
       </wvobject>
       <wvobject type="group" fp_name="group67">
@@ -268,7 +280,6 @@
       <wvobject type="group" fp_name="group59">
          <obj_property name="label">ACC</obj_property>
          <obj_property name="DisplayName">label</obj_property>
-         <obj_property name="isExpanded"></obj_property>
          <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/ACC_d">
             <obj_property name="ElementShortName">ACC_d[7:0]</obj_property>
             <obj_property name="ObjectShortName">ACC_d[7:0]</obj_property>

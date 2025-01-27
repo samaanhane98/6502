@@ -71,6 +71,7 @@ BEGIN
         tmp_result <= "0" & STD_LOGIC_VECTOR(unsigned(op_ai) + unsigned(op_bi));
       WHEN AD_INC =>
         tmp_result <= "0" & STD_LOGIC_VECTOR(unsigned(op_ai) + unsigned(op_bi) + 1);
+
       WHEN OTHERS =>
     END CASE;
   END PROCESS;
