@@ -17,34 +17,27 @@ The following instructions will be supported:
 - - [x] Indexed Indirect
 
 - [ ] LDA
-- - [ ] IMM
-- - [ ] ZERO PAGE
-- - [ ] ZERO PAGE X
-- - [ ] ABS
-- - [ ] ABS,X
+- - [x] IMM
+- - [x] ZERO PAGE
+- - [x] ZERO PAGE X
+- - [x] ABS
+- - [x] ABS,X
 - - [ ] ABS,Y
 - - [ ] Indirect Indexed
 - - [ ] Indexed Indirect
 
 - [ ] LDX
-- - [ ] IMM
-- - [ ] ZERO PAGE
-- - [ ] ZERO PAGE X
-- - [ ] ABS
-- - [ ] ABS,X
+- - [x] IMM
+- - [x] ZERO PAGE
+- - [x] ABS
 - - [ ] ABS,Y
-- - [ ] Indirect Indexed
-- - [ ] Indexed Indirect
 
 - [ ] LDY
-- - [ ] IMM
-- - [ ] ZERO PAGE
-- - [ ] ZERO PAGE X
-- - [ ] ABS
-- - [ ] ABS,X
-- - [ ] ABS,Y
-- - [ ] Indirect Indexed
-- - [ ] Indexed Indirect
+- - [x] IMM
+- - [x] ZERO PAGE
+- - [x] ZERO PAGE X
+- - [x] ABS
+- - [x] ABS,X
 
 # Links
 

@@ -273,6 +273,12 @@ PACKAGE BODY cpu_pkg IS
         o_instr.instruction_group := SET_REG;
         o_instr.addressing_mode := ABSOLUTE;
         o_instr.instruction_length := 3;
+
+      WHEN x"BC" =>
+        o_instr.instruction_type := LDY;
+        o_instr.instruction_group := SET_REG;
+        o_instr.addressing_mode := ABSOLUTE_X;
+        o_instr.instruction_length := 3;
       WHEN OTHERS =>
         o_instr.instruction_type := NOP;
         o_instr.instruction_group := NONE;
