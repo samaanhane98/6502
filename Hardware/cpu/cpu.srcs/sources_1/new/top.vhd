@@ -41,7 +41,8 @@ ARCHITECTURE behavioral OF top IS
 
   -- LDA
   -- SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"A5", 1 => x"10", 16 => x"00", OTHERS => (OTHERS => '0')); -- ZPX
-  SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"6D", 1 => x"01", 2 => x"01", 257 => x"AA", OTHERS => (OTHERS => '0')); -- ABS
+  -- SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"AE", 1 => x"01", 2 => x"01", 257 => x"AA", OTHERS => (OTHERS => '0')); -- ABS
+  SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"BD", 1 => x"01", 2 => x"01", 257 => x"AA", OTHERS => (OTHERS => '0')); -- ABSX
 
   SIGNAL data_in : STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL data_out : STD_LOGIC_VECTOR(7 DOWNTO 0);

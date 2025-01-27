@@ -1,6 +1,50 @@
 # CPU Project
 
-This projects is an attempt at a CPU build for the Pynq Z2 board. Much of the VHDL is based on the following repo: https://github.com/bernardo-andreeti/6502
+This projects is an attempt at a CPU build for the Pynq Z2 board. The inspiration for the CPU is the 6502 processor. Much of the VHDL is based on the following repo: https://github.com/bernardo-andreeti/6502.
+
+# ISA
+
+The following instructions will be supported:
+
+- [x] ADC
+- - [x] IMM
+- - [x] ZERO PAGE
+- - [x] ZERO PAGE X
+- - [x] ABS
+- - [x] ABS,X
+- - [x] ABS,Y
+- - [x] Indirect Indexed
+- - [x] Indexed Indirect
+
+- [ ] LDA
+- - [ ] IMM
+- - [ ] ZERO PAGE
+- - [ ] ZERO PAGE X
+- - [ ] ABS
+- - [ ] ABS,X
+- - [ ] ABS,Y
+- - [ ] Indirect Indexed
+- - [ ] Indexed Indirect
+
+- [ ] LDX
+- - [ ] IMM
+- - [ ] ZERO PAGE
+- - [ ] ZERO PAGE X
+- - [ ] ABS
+- - [ ] ABS,X
+- - [ ] ABS,Y
+- - [ ] Indirect Indexed
+- - [ ] Indexed Indirect
+
+- [ ] LDY
+- - [ ] IMM
+- - [ ] ZERO PAGE
+- - [ ] ZERO PAGE X
+- - [ ] ABS
+- - [ ] ABS,X
+- - [ ] ABS,Y
+- - [ ] Indirect Indexed
+- - [ ] Indexed Indirect
 
 # Links
 

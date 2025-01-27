@@ -197,7 +197,7 @@ BEGIN
       ce => u_operation.bi_en
     );
 
-  RGX_MUX : RGX_d <= x"00";
+  RGX_MUX : RGX_d <= SB;
 
   RGX_REGISTER : ENTITY work.bits_register
     GENERIC MAP(
@@ -208,10 +208,10 @@ BEGIN
       rst => rst,
       d => RGX_d,
       q => RGX_q,
-      ce => '1'
+      ce => u_operation.rgx_en
     );
 
-  RGY_MUX : RGY_d <= x"00";
+  RGY_MUX : RGY_d <= SB;
 
   RGY_REGISTER : ENTITY work.bits_register
     GENERIC MAP(
@@ -222,7 +222,7 @@ BEGIN
       rst => rst,
       d => RGY_d,
       q => RGY_q,
-      ce => '1'
+      ce => u_operation.rgy_en
     );
 
   ACC_MUX : ACC_d <= SB WHEN u_operation.mux_acc = s_SB ELSE
