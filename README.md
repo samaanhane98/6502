@@ -4,7 +4,7 @@ This projects is an attempt at a CPU build for the Pynq Z2 board. The inspiratio
 
 # ISA
 
-The following instructions will be supported:
+Eventually, all 6502 legal instructions will be supported. Currently, the following instructions have been considered:
 
 - [x] ADC
 - - [x] IMM
@@ -38,6 +38,24 @@ The following instructions will be supported:
 - - [x] ZERO PAGE X
 - - [x] ABS
 - - [x] ABS,X
+
+- [x] NOP
+- [ ] BCC
+- [ ] BCS
+- [ ] BEQ
+- [ ] BMI
+- [ ] BNE
+- [ ] BPL
+- [ ] BVC
+- [ ] BVS
+- [ ] CLC
+- [ ] SEC
+- [ ] CLV
+- [ ] DEX
+- [ ] DEY
+- [ ] INX
+- [ ] INY
+- [ ] JMP
 
 # Links
 
