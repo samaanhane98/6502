@@ -43,6 +43,7 @@ ARCHITECTURE behavioral OF control_path IS
   SIGNAL adc_u_op : MICRO_OPERATION;
   SIGNAL ld_u_op : MICRO_OPERATION;
   SIGNAL stat_u_op : MICRO_OPERATION;
+  SIGNAL jmp_u_op : MICRO_OPERATION;
 
 BEGIN
 
@@ -67,7 +68,7 @@ BEGIN
       WHEN T0 =>
         next_state <= T1;
       WHEN T1 =>
-        IF decInstruction.instruction_group = SET_STATUS OR decInstruction.instruction_group = CLEAR_STATUS THEN
+        IF decInstruction.instruction_group = SET_STATUS OR decInstruction.instruction_group = CLEAR_STATUS OR decInstruction.instruction_type = NOP THEN
           next_state <= T0;
         ELSE
           next_state <= T2;
@@ -75,6 +76,8 @@ BEGIN
 
       WHEN T2 =>
         IF decInstruction.instruction_type = ADC THEN
+          next_state <= T3;
+        ELSIF decInstruction.instruction_type = JMP THEN
           next_state <= T3;
         ELSIF decInstruction.instruction_group = SET_REG THEN
           CASE (decInstruction.addressing_mode) IS
@@ -95,6 +98,13 @@ BEGIN
             WHEN OTHERS =>
               next_state <= T4;
           END CASE;
+        ELSIF decInstruction.instruction_type = JMP THEN
+          CASE (decInstruction.addressing_mode) IS
+            WHEN ABSOLUTE =>
+              next_state <= T0;
+            WHEN OTHERS =>
+          END CASE;
+
         ELSIF decInstruction.instruction_group = SET_REG THEN
           CASE (decInstruction.addressing_mode) IS
             WHEN ZERO_PAGE =>
@@ -179,6 +189,8 @@ BEGIN
     ELSIF state = T1 THEN
       IF decInstruction.instruction_group = SET_STATUS OR decInstruction.instruction_group = CLEAR_STATUS THEN
         u_operation <= stat_u_op;
+      ELSIF decInstruction.instruction_type = NOP THEN
+        u_operation <= u_op;
       ELSE
         ------- Addressing ------- 
         address_pc(u_op);
@@ -193,6 +205,9 @@ BEGIN
           u_operation <= adc_u_op;
         WHEN LDA | LDX | LDY =>
           u_operation <= ld_u_op;
+
+        WHEN JMP =>
+          u_operation <= jmp_u_op;
 
         WHEN OTHERS =>
       END CASE;
@@ -802,5 +817,47 @@ BEGIN
     END IF;
 
     stat_u_op <= u_op;
+  END PROCESS;
+
+  JMP_instr : PROCESS (ALL)
+    VARIABLE u_op : MICRO_OPERATION;
+  BEGIN
+    reset(u_op);
+    IF decInstruction.instruction_type = JMP THEN
+      CASE state IS
+        WHEN T2 =>
+          CASE (decInstruction.addressing_mode) IS
+            WHEN ABSOLUTE =>
+              ------- Addressing ------- 
+              address_pc(u_op);
+              -------------------------- 
+
+              increment_pc(u_op);
+
+              u_op.alu_op := AD;
+              u_op.mux_ai := s_ZERO;
+              u_op.ai_en := '1';
+
+              u_op.mux_db := s_DATA;
+              u_op.mux_bi := s_DB;
+              u_op.bi_en := '1';
+
+            WHEN OTHERS =>
+          END CASE;
+        WHEN T3 =>
+          CASE (decInstruction.addressing_mode) IS
+            WHEN ABSOLUTE =>
+              u_op.mux_pc := s_JMP;
+              u_op.mux_db := s_DATA;
+              u_op.mux_sb := s_ALU;
+              u_op.pcl_en := '1';
+              u_op.pch_en := '1';
+
+            WHEN OTHERS =>
+          END CASE;
+        WHEN OTHERS =>
+      END CASE;
+    END IF;
+    jmp_u_op <= u_op;
   END PROCESS;
 END behavioral;

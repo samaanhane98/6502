@@ -39,6 +39,10 @@ Eventually, all 6502 legal instructions will be supported. Currently, the follow
 - - [x] ABS
 - - [x] ABS,X
 
+- [ ] JMP
+- - [x] ABS
+- - [ ] INDIRECT
+
 - [x] NOP
 - [ ] BCC
 - [ ] BCS
@@ -55,7 +59,6 @@ Eventually, all 6502 legal instructions will be supported. Currently, the follow
 - [ ] DEY
 - [ ] INX
 - [ ] INY
-- [ ] JMP
 
 # Links
 

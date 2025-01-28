@@ -118,7 +118,8 @@ BEGIN
     );
 
   PC_MUX : PC_in <= STD_LOGIC_VECTOR(unsigned(pch_q) & unsigned(pcl_q) + 1) WHEN u_operation.mux_pc = s_INCR ELSE
-  (OTHERS => '0');
+  DB & SB WHEN u_operation.mux_pc = s_JMP;
+
   PCL_REGISTER : ENTITY work.bits_register
     GENERIC MAP(
       WIDTH => 8,

@@ -31,7 +31,7 @@ ENTITY top IS
 END top;
 
 ARCHITECTURE behavioral OF top IS
-  SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"69", 1 => x"18", 2 => x"B8", OTHERS => (OTHERS => '0')); -- Indexed_Indirect
+  SIGNAL memory : MEMORY(0 TO 65534) := (6 => x"69", 7 => x"01", 8 => x"4C", 9 => x"06", 10 => x"00", OTHERS => (OTHERS => '0')); -- Indexed_Indirect
 
   SIGNAL data_in : STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL data_out : STD_LOGIC_VECTOR(7 DOWNTO 0);

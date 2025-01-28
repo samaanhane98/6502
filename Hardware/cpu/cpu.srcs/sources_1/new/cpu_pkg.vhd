@@ -50,7 +50,7 @@ PACKAGE cpu_pkg IS
   TYPE ADDRESSING_MODE IS (IMPL, IMM, ZERO_PAGE, ZERO_PAGE_X, ZERO_PAGE_Y, ABSOLUTE, ABSOLUTE_X, ABSOLUTE_Y, INDEXED_INDIRECT, INDIRECT_INDEXED);
   TYPE INSTRUCTION_GROUP IS (NONE, SET_REG, SET_STATUS, CLEAR_STATUS);
   TYPE INSTRUCTION_TYPE IS (
-    NOP, ADC, LDA, LDX, LDY, SC, CLC, CLV
+    NOP, ADC, LDA, LDX, LDY, SC, CLC, CLV, JMP
   );
 
   SUBTYPE INSTRUCTION IS STD_LOGIC_VECTOR(7 DOWNTO 0);
@@ -75,7 +75,7 @@ PACKAGE cpu_pkg IS
   TYPE mux_db_t IS (s_DATA, s_ACC, s_PCL, s_PCH, s_SB);
   TYPE mux_sb_t IS (s_RGX, s_RGY, s_ACC, s_ALU, s_ADH, s_DB);
 
-  TYPE mux_pc_t IS (s_INCR);
+  TYPE mux_pc_t IS (s_INCR, s_JMP);
   TYPE mux_addr_t IS (s_MA, s_AB);
   TYPE mux_ma_t IS (s_PC, s_ALU, s_DATA);
   TYPE mux_adl_t IS (s_PC, s_ALU, s_DATA);
@@ -366,6 +366,11 @@ PACKAGE BODY cpu_pkg IS
         o_instr.addressing_mode := IMPL;
         o_instr.instruction_length := 1;
 
+      WHEN x"4C" =>
+        o_instr.instruction_type := JMP;
+        o_instr.instruction_group := NONE;
+        o_instr.addressing_mode := ABSOLUTE;
+        o_instr.instruction_length := 3;
       WHEN OTHERS =>
         o_instr.instruction_type := NOP;
         o_instr.instruction_group := NONE;
@@ -404,6 +409,7 @@ PACKAGE BODY cpu_pkg IS
       WHEN SC => RETURN "Set Carry Flag";
       WHEN CLC => RETURN "Cear Carry Flag";
       WHEN CLV => RETURN "Cear Overflow Flag";
+      WHEN JMP => RETURN "Jump";
       WHEN NOP => RETURN "No Operation";
       WHEN OTHERS => RETURN "UNKNOWN";
     END CASE;
