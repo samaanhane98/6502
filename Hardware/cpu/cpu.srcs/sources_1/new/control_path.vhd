@@ -62,7 +62,7 @@ BEGIN
     END IF;
   END PROCESS;
 
-  STATE_MACHINE : PROCESS (state, decInstruction) BEGIN
+  STATE_MACHINE : PROCESS (ALL) BEGIN
     CASE STATE IS
       WHEN T0 =>
         next_state <= T1;
@@ -203,7 +203,7 @@ BEGIN
     END IF;
   END PROCESS;
 
-  ADC_instr : PROCESS (state, decInstruction)
+  ADC_instr : PROCESS (ALL)
     VARIABLE u_op : MICRO_OPERATION;
   BEGIN
     reset(u_op);
@@ -514,7 +514,7 @@ BEGIN
   END PROCESS;
 
   -- ! LDA, LDX, LDY
-  LD_instr : PROCESS (state, decInstruction)
+  LD_instr : PROCESS (ALL)
     VARIABLE u_op : MICRO_OPERATION;
   BEGIN
     reset(u_op);
@@ -781,7 +781,7 @@ BEGIN
     ld_u_op <= u_op;
   END PROCESS;
 
-  STAGUS_FLAG_instr : PROCESS (state, decInstruction) IS
+  STAGUS_FLAG_instr : PROCESS (ALL) IS
     VARIABLE u_op : MICRO_OPERATION;
   BEGIN
     reset(u_op);
