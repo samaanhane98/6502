@@ -32,7 +32,7 @@ ENTITY data_path IS
     rst : IN STD_LOGIC;
     u_operation : IN MICRO_OPERATION;
     data_in : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-    data_out : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+    data_out : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
     address : OUT STD_LOGIC_VECTOR(15 DOWNTO 0)
   );
 END data_path;
@@ -59,6 +59,8 @@ BEGIN
   -- Addressing
   ADDRESS_MUX : address <= MA_q WHEN u_operation.mux_addr = s_MA ELSE
   ABH_q & ABL_q WHEN u_operation.mux_addr = s_AB;
+
+  DATA_OUT_MUX : data_out <= DB WHEN u_operation.mux_dout = s_DB;
 
   -- Buses
   MUX_DB : DB <= data_in WHEN u_operation.mux_db = s_DATA ELSE

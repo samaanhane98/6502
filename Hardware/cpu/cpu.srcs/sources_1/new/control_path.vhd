@@ -42,6 +42,7 @@ ARCHITECTURE behavioral OF control_path IS
 
   SIGNAL adc_u_op : MICRO_OPERATION;
   SIGNAL ld_u_op : MICRO_OPERATION;
+  SIGNAL st_u_op : MICRO_OPERATION;
   SIGNAL stat_u_op : MICRO_OPERATION;
   SIGNAL jmp_u_op : MICRO_OPERATION;
 
@@ -86,6 +87,13 @@ BEGIN
             WHEN OTHERS =>
               next_state <= T3;
           END CASE;
+        ELSIF decInstruction.instruction_group = STORE_REG THEN
+          CASE (decInstruction.addressing_mode) IS
+            WHEN ABSOLUTE =>
+              next_state <= T3;
+            WHEN OTHERS =>
+              next_state <= T0;
+          END CASE;
         ELSE
           next_state <= T0;
         END IF;
@@ -112,6 +120,13 @@ BEGIN
             WHEN OTHERS =>
               next_state <= T4;
           END CASE;
+        ELSIF decInstruction.instruction_group = STORE_REG THEN
+          CASE (decInstruction.addressing_mode) IS
+            WHEN ABSOLUTE =>
+              next_state <= T4;
+            WHEN OTHERS =>
+              next_state <= T0;
+          END CASE;
         END IF;
 
       WHEN T4 =>
@@ -129,6 +144,13 @@ BEGIN
             WHEN OTHERS =>
               next_state <= T5;
           END CASE;
+
+        ELSIF decInstruction.instruction_group = STORE_REG THEN
+          CASE (decInstruction.addressing_mode) IS
+            WHEN OTHERS =>
+              next_state <= T0;
+          END CASE;
+
         END IF;
 
       WHEN T5 =>
@@ -205,7 +227,8 @@ BEGIN
           u_operation <= adc_u_op;
         WHEN LDA | LDX | LDY =>
           u_operation <= ld_u_op;
-
+        WHEN STA =>
+          u_operation <= st_u_op;
         WHEN JMP =>
           u_operation <= jmp_u_op;
 
@@ -564,12 +587,10 @@ BEGIN
 
             WHEN ABSOLUTE =>
               ------- Addressing ------- 
-              u_op.mux_addr := s_MA;
+              address_pc(u_op);
               -------------------------- 
 
               increment_pc(u_op);
-              u_op.mux_ma := s_PC;
-              u_op.ma_en := '1';
 
               u_op.mux_adl := s_DATA;
               u_op.abl_en := '1';
@@ -794,6 +815,48 @@ BEGIN
     END IF;
 
     ld_u_op <= u_op;
+  END PROCESS;
+
+  ST_instr : PROCESS (ALL)
+    VARIABLE u_op : MICRO_OPERATION;
+  BEGIN
+    reset(u_op);
+    IF decInstruction.instruction_group = STORE_REG THEN
+      CASE state IS
+        WHEN T2 =>
+          CASE (decInstruction.addressing_mode) IS
+            WHEN ABSOLUTE =>
+              ------- Addressing ------- 
+              address_pc(u_op);
+              -------------------------- 
+
+              increment_pc(u_op);
+
+              u_op.mux_adl := s_DATA;
+              u_op.abl_en := '1';
+            WHEN OTHERS =>
+          END CASE;
+        WHEN T3 =>
+          CASE (decInstruction.addressing_mode) IS
+            WHEN ABSOLUTE =>
+              u_op.mux_adh := s_DATA;
+              u_op.abh_en := '1';
+            WHEN OTHERS =>
+          END CASE;
+        WHEN T4 =>
+          CASE (decInstruction.addressing_mode) IS
+            WHEN ABSOLUTE =>
+              u_op.mux_addr := s_AB;
+              u_op.wr_mem := WRITE_ENABLE;
+              u_op.mux_db := s_ACC;
+              u_op.mux_dout := s_DB;
+            WHEN OTHERS =>
+          END CASE;
+
+        WHEN OTHERS =>
+      END CASE;
+    END IF;
+    st_u_op <= u_op;
   END PROCESS;
 
   STAGUS_FLAG_instr : PROCESS (ALL) IS

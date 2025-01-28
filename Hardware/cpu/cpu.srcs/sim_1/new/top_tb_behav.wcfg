@@ -11,9 +11,9 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="3.143064 us"></ZoomStartTime>
-      <ZoomEndTime time="15.003065 us"></ZoomEndTime>
-      <Cursor1Time time="9.723064 us"></Cursor1Time>
+      <ZoomStartTime time="1.166666 us"></ZoomStartTime>
+      <ZoomEndTime time="11.166667 us"></ZoomEndTime>
+      <Cursor1Time time="5.552984 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="180"></NameColumnWidth>
@@ -503,6 +503,10 @@
       <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/control_path_inst/decInstruction">
          <obj_property name="ElementShortName">decInstruction</obj_property>
          <obj_property name="ObjectShortName">decInstruction</obj_property>
+      </wvobject>
+      <wvobject type="array" fp_name="/top_tb/DUT/memory[5]">
+         <obj_property name="ElementShortName">[5][7:0]</obj_property>
+         <obj_property name="ObjectShortName">[5][7:0]</obj_property>
       </wvobject>
    </wvobject>
 </wave_config>

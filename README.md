@@ -43,6 +43,9 @@ Eventually, all 6502 legal instructions will be supported. Currently, the follow
 - - [x] ABS
 - - [ ] INDIRECT
 
+- [x] STA
+- - [x] ABS
+
 - [x] NOP
 - [ ] BCC
 - [ ] BCS

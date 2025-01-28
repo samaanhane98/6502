@@ -48,9 +48,9 @@ PACKAGE cpu_pkg IS
 
   -- Instruction types
   TYPE ADDRESSING_MODE IS (IMPL, IMM, ZERO_PAGE, ZERO_PAGE_X, ZERO_PAGE_Y, ABSOLUTE, ABSOLUTE_X, ABSOLUTE_Y, INDEXED_INDIRECT, INDIRECT_INDEXED);
-  TYPE INSTRUCTION_GROUP IS (NONE, SET_REG, SET_STATUS, CLEAR_STATUS);
+  TYPE INSTRUCTION_GROUP IS (NONE, SET_REG, STORE_REG, SET_STATUS, CLEAR_STATUS);
   TYPE INSTRUCTION_TYPE IS (
-    NOP, ADC, LDA, LDX, LDY, SC, CLC, CLV, JMP
+    NOP, ADC, LDA, LDX, LDY, SC, CLC, CLV, JMP, STA
   );
 
   SUBTYPE INSTRUCTION IS STD_LOGIC_VECTOR(7 DOWNTO 0);
@@ -74,6 +74,7 @@ PACKAGE cpu_pkg IS
 
   TYPE mux_db_t IS (s_DATA, s_ACC, s_PCL, s_PCH, s_SB);
   TYPE mux_sb_t IS (s_RGX, s_RGY, s_ACC, s_ALU, s_ADH, s_DB);
+  TYPE mux_dout_t IS (s_DB);
 
   TYPE mux_pc_t IS (s_INCR, s_JMP);
   TYPE mux_addr_t IS (s_MA, s_AB);
@@ -105,6 +106,7 @@ PACKAGE cpu_pkg IS
     -- MUX
     mux_db : mux_db_t;
     mux_sb : mux_sb_t;
+    mux_dout : mux_dout_t;
     mux_pc : mux_pc_t;
     mux_ma : mux_ma_t;
     mux_addr : mux_addr_t;
@@ -143,6 +145,7 @@ PACKAGE BODY cpu_pkg IS
     u_op.status_en := (OTHERS => '0');
     u_op.mux_db := s_DATA;
     u_op.mux_sb := s_ALU;
+    u_op.mux_dout := s_DB;
     u_op.mux_pc := S_INCR;
     u_op.mux_ma := s_PC;
     u_op.mux_addr := s_MA;
@@ -371,6 +374,13 @@ PACKAGE BODY cpu_pkg IS
         o_instr.instruction_group := NONE;
         o_instr.addressing_mode := ABSOLUTE;
         o_instr.instruction_length := 3;
+
+      WHEN x"8D" =>
+        o_instr.instruction_type := STA;
+        o_instr.instruction_group := STORE_REG;
+        o_instr.addressing_mode := ABSOLUTE;
+        o_instr.instruction_length := 3;
+
       WHEN OTHERS =>
         o_instr.instruction_type := NOP;
         o_instr.instruction_group := NONE;
