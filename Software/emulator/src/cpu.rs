@@ -126,6 +126,7 @@ pub fn compute_address(cpu: Processor, mode: AddressingMode) -> usize {
         AddressingMode::Immediate(address) => address as usize,
         AddressingMode::ZeroPage(address) => address as usize,
         AddressingMode::ZeroPageX(address) => address.wrapping_add(cpu.regx) as usize,
+        AddressingMode::ZeroPageY(address) => address.wrapping_add(cpu.regy) as usize,
         AddressingMode::Absolute(address) => address as usize,
         AddressingMode::AbsoluteX(address) => (address + cpu.regx as u16) as usize,
         AddressingMode::AbsoluteY(address) => (address + cpu.regy as u16) as usize,
