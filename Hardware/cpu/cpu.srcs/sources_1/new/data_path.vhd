@@ -244,14 +244,16 @@ BEGIN
   status_data_in(NEGATIVE) <= '1' WHEN data_in(7) = '1' ELSE
   '0';
 
-  status_d(CARRY) <= status_alu(CARRY);
+  status_d(CARRY) <= status_alu(CARRY) WHEN u_operation.mux_status = s_ALU ELSE
+  u_operation.status_val WHEN u_operation.mux_status = s_IMPL;
   status_d(ZERO) <= status_alu(ZERO) WHEN u_operation.mux_status = s_ALU ELSE
   status_data_in(ZERO);
   status_d(INTERRUPT) <= '0';
   status_d(DECIMAL) <= '0';
   status_d(BREAKF) <= '0';
   status_d(UNUSED) <= '1';
-  status_d(OVERFLOW) <= status_alu(OVERFLOW);
+  status_d(OVERFLOW) <= status_alu(OVERFLOW) WHEN u_operation.mux_status = s_ALU ELSE
+  u_operation.status_val WHEN u_operation.mux_status = s_IMPL;
   status_d(NEGATIVE) <= status_alu(NEGATIVE) WHEN u_operation.mux_status = s_ALU ELSE
   status_data_in(NEGATIVE);
 

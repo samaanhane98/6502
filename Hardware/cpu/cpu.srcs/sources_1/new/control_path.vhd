@@ -36,23 +36,15 @@ END control_path;
 ARCHITECTURE behavioral OF control_path IS
   SIGNAL state, next_state : CPU_STATE := T0;
 
-  -- SIGNAL IR : STD_LOGIC_VECTOR(7 DOWNTO 0) := (OTHERS => '0');
+  SIGNAL IR : STD_LOGIC_VECTOR(7 DOWNTO 0) := (OTHERS => '0');
 
   SIGNAL decInstruction : DECODED_INSTRUCTION;
 
   SIGNAL adc_u_op : MICRO_OPERATION;
   SIGNAL ld_u_op : MICRO_OPERATION;
+  SIGNAL stat_u_op : MICRO_OPERATION;
 
 BEGIN
-
-  IR_FETCH : PROCESS (clk) BEGIN
-    IF rising_edge(clk) THEN
-      IF state = T1 THEN
-        decInstruction <= decode(instruction);
-
-      END IF;
-    END IF;
-  END PROCESS;
 
   PROCESS (clk, rst) BEGIN
     IF rising_edge(clk) THEN
@@ -64,12 +56,22 @@ BEGIN
     END IF;
   END PROCESS;
 
-  STATE_MACHINE : PROCESS (state) BEGIN
+  PROCESS (state, instruction) BEGIN
+    IF state = T1 THEN
+      decInstruction <= decode(instruction);
+    END IF;
+  END PROCESS;
+
+  STATE_MACHINE : PROCESS (state, decInstruction) BEGIN
     CASE STATE IS
       WHEN T0 =>
         next_state <= T1;
       WHEN T1 =>
-        next_state <= T2;
+        IF decInstruction.instruction_group = SET_STATUS OR decInstruction.instruction_group = CLEAR_STATUS THEN
+          next_state <= T0;
+        ELSE
+          next_state <= T2;
+        END IF;
 
       WHEN T2 =>
         IF decInstruction.instruction_type = ADC THEN
@@ -175,18 +177,23 @@ BEGIN
       increment_pc(u_op);
       u_operation <= u_op;
     ELSIF state = T1 THEN
-      ------- Addressing ------- 
-      address_pc(u_op);
-      -------------------------- 
+      IF decInstruction.instruction_group = SET_STATUS OR decInstruction.instruction_group = CLEAR_STATUS THEN
+        u_operation <= stat_u_op;
+      ELSE
+        ------- Addressing ------- 
+        address_pc(u_op);
+        -------------------------- 
+        increment_pc(u_op);
 
-      increment_pc(u_op);
-      u_operation <= u_op;
+        u_operation <= u_op;
+      END IF;
     ELSE
       CASE decInstruction.instruction_type IS
         WHEN ADC =>
           u_operation <= adc_u_op;
         WHEN LDA | LDX | LDY =>
           u_operation <= ld_u_op;
+
         WHEN OTHERS =>
       END CASE;
     END IF;
@@ -196,7 +203,7 @@ BEGIN
     END IF;
   END PROCESS;
 
-  ADC_instr : PROCESS (state)
+  ADC_instr : PROCESS (state, decInstruction)
     VARIABLE u_op : MICRO_OPERATION;
   BEGIN
     reset(u_op);
@@ -507,7 +514,7 @@ BEGIN
   END PROCESS;
 
   -- ! LDA, LDX, LDY
-  LD_instr : PROCESS (state, rst)
+  LD_instr : PROCESS (state, decInstruction)
     VARIABLE u_op : MICRO_OPERATION;
   BEGIN
     reset(u_op);
@@ -772,5 +779,28 @@ BEGIN
     END IF;
 
     ld_u_op <= u_op;
+  END PROCESS;
+
+  STAGUS_FLAG_instr : PROCESS (state, decInstruction) IS
+    VARIABLE u_op : MICRO_OPERATION;
+  BEGIN
+    reset(u_op);
+    IF state = T1 THEN
+      ------- Addressing ------- 
+      address_pc(u_op);
+      -------------------------- 
+      u_op.mux_status := s_IMPL;
+
+      u_op.status_val := '1' WHEN decInstruction.instruction_group = SET_STATUS ELSE
+      '0';
+
+      u_op.status_en(CARRY) := '1' WHEN decInstruction.instruction_type = SC OR decInstruction.instruction_type = CLC ELSE
+      '0';
+
+      u_op.status_en(OVERFLOW) := '1' WHEN decInstruction.instruction_type = CLV ELSE
+      '0';
+    END IF;
+
+    stat_u_op <= u_op;
   END PROCESS;
 END behavioral;

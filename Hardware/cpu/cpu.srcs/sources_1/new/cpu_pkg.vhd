@@ -48,9 +48,9 @@ PACKAGE cpu_pkg IS
 
   -- Instruction types
   TYPE ADDRESSING_MODE IS (IMPL, IMM, ZERO_PAGE, ZERO_PAGE_X, ZERO_PAGE_Y, ABSOLUTE, ABSOLUTE_X, ABSOLUTE_Y, INDEXED_INDIRECT, INDIRECT_INDEXED);
-  TYPE INSTRUCTION_GROUP IS (NONE, SET_REG);
+  TYPE INSTRUCTION_GROUP IS (NONE, SET_REG, SET_STATUS, CLEAR_STATUS);
   TYPE INSTRUCTION_TYPE IS (
-    NOP, ADC, LDA, LDX, LDY
+    NOP, ADC, LDA, LDX, LDY, SC, CLC, CLV
   );
 
   SUBTYPE INSTRUCTION IS STD_LOGIC_VECTOR(7 DOWNTO 0);
@@ -83,10 +83,11 @@ PACKAGE cpu_pkg IS
   TYPE mux_ai_t IS (s_SB, s_ZERO);
   TYPE mux_bi_t IS (s_DB);
   TYPE mux_acc_t IS (s_SB, s_DB);
-  TYPE mux_status_t IS (s_ALU, s_DATA);
+  TYPE mux_status_t IS (s_ALU, s_DATA, s_IMPL);
   TYPE MICRO_OPERATION IS RECORD
     wr_mem : RW; -- WRITE/READ operation
     alu_op : ALU_OPERATION;
+    status_val : STD_LOGIC;
 
     -- Enables
     pcl_en : STD_LOGIC;
@@ -128,6 +129,7 @@ PACKAGE BODY cpu_pkg IS
   BEGIN
     u_op.wr_mem := READ_ENABLE;
     u_op.alu_op := ADC;
+    u_op.status_val := '0';
     u_op.pcl_en := '0';
     u_op.pch_en := '0';
     u_op.ma_en := '0';
@@ -346,6 +348,24 @@ PACKAGE BODY cpu_pkg IS
         o_instr.addressing_mode := ABSOLUTE_X;
         o_instr.instruction_length := 3;
 
+      WHEN x"18" =>
+        o_instr.instruction_type := CLC;
+        o_instr.instruction_group := CLEAR_STATUS;
+        o_instr.addressing_mode := IMPL;
+        o_instr.instruction_length := 1;
+
+      WHEN x"38" =>
+        o_instr.instruction_type := SC;
+        o_instr.instruction_group := SET_STATUS;
+        o_instr.addressing_mode := IMPL;
+        o_instr.instruction_length := 1;
+
+      WHEN x"B8" =>
+        o_instr.instruction_type := CLV;
+        o_instr.instruction_group := CLEAR_STATUS;
+        o_instr.addressing_mode := IMPL;
+        o_instr.instruction_length := 1;
+
       WHEN OTHERS =>
         o_instr.instruction_type := NOP;
         o_instr.instruction_group := NONE;
@@ -381,7 +401,9 @@ PACKAGE BODY cpu_pkg IS
       WHEN LDA => RETURN "Load Accumulator";
       WHEN LDX => RETURN "Load X Register";
       WHEN LDY => RETURN "Load Y Register";
-
+      WHEN SC => RETURN "Set Carry Flag";
+      WHEN CLC => RETURN "Cear Carry Flag";
+      WHEN CLV => RETURN "Cear Overflow Flag";
       WHEN NOP => RETURN "No Operation";
       WHEN OTHERS => RETURN "UNKNOWN";
     END CASE;

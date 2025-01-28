@@ -12,12 +12,12 @@
    </db_ref_list>
    <zoom_setting>
       <ZoomStartTime time="0.000000 us"></ZoomStartTime>
-      <ZoomEndTime time="6.057143 us"></ZoomEndTime>
-      <Cursor1Time time="1.000000 us"></Cursor1Time>
+      <ZoomEndTime time="10.000001 us"></ZoomEndTime>
+      <Cursor1Time time="6.000000 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="153"></NameColumnWidth>
-      <ValueColumnWidth column_width="91"></ValueColumnWidth>
+      <NameColumnWidth column_width="180"></NameColumnWidth>
+      <ValueColumnWidth column_width="60"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="8" />
    <wvobject type="logic" fp_name="/top_tb/DUT/clk">
@@ -141,30 +141,6 @@
             <obj_property name="ObjectShortName">INIT_VALUE</obj_property>
          </wvobject>
       </wvobject>
-      <wvobject type="group" fp_name="group64">
-         <obj_property name="label">STATUS</obj_property>
-         <obj_property name="DisplayName">label</obj_property>
-         <wvobject type="logic" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/STATUS_REGISTER/clk">
-            <obj_property name="ElementShortName">clk</obj_property>
-            <obj_property name="ObjectShortName">clk</obj_property>
-         </wvobject>
-         <wvobject type="logic" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/STATUS_REGISTER/rst">
-            <obj_property name="ElementShortName">rst</obj_property>
-            <obj_property name="ObjectShortName">rst</obj_property>
-         </wvobject>
-         <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/STATUS_REGISTER/ce">
-            <obj_property name="ElementShortName">ce[7:0]</obj_property>
-            <obj_property name="ObjectShortName">ce[7:0]</obj_property>
-         </wvobject>
-         <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/STATUS_REGISTER/d">
-            <obj_property name="ElementShortName">d[7:0]</obj_property>
-            <obj_property name="ObjectShortName">d[7:0]</obj_property>
-         </wvobject>
-         <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/STATUS_REGISTER/q">
-            <obj_property name="ElementShortName">q[7:0]</obj_property>
-            <obj_property name="ObjectShortName">q[7:0]</obj_property>
-         </wvobject>
-      </wvobject>
       <wvobject type="group" fp_name="group67">
          <obj_property name="label">MA</obj_property>
          <obj_property name="DisplayName">label</obj_property>
@@ -277,9 +253,84 @@
             <obj_property name="ObjectShortName">INIT_VALUE</obj_property>
          </wvobject>
       </wvobject>
+      <wvobject type="group" fp_name="group64">
+         <obj_property name="label">STATUS</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="isExpanded"></obj_property>
+         <wvobject type="logic" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/STATUS_REGISTER/clk">
+            <obj_property name="ElementShortName">clk</obj_property>
+            <obj_property name="ObjectShortName">clk</obj_property>
+         </wvobject>
+         <wvobject type="logic" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/STATUS_REGISTER/rst">
+            <obj_property name="ElementShortName">rst</obj_property>
+            <obj_property name="ObjectShortName">rst</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/STATUS_REGISTER/ce">
+            <obj_property name="ElementShortName">ce[7:0]</obj_property>
+            <obj_property name="ObjectShortName">ce[7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/STATUS_REGISTER/d">
+            <obj_property name="ElementShortName">d[7:0]</obj_property>
+            <obj_property name="ObjectShortName">d[7:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/STATUS_REGISTER/q">
+            <obj_property name="ElementShortName">q[7:0]</obj_property>
+            <obj_property name="ObjectShortName">q[7:0]</obj_property>
+            <obj_property name="isExpanded"></obj_property>
+            <wvobject type="logic" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/STATUS_REGISTER/q[7]">
+               <obj_property name="DisplayName">label</obj_property>
+               <obj_property name="ElementShortName">[7]</obj_property>
+               <obj_property name="ObjectShortName">[7]</obj_property>
+               <obj_property name="label">NEGATIVE</obj_property>
+            </wvobject>
+            <wvobject type="logic" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/STATUS_REGISTER/q[6]">
+               <obj_property name="DisplayName">label</obj_property>
+               <obj_property name="ElementShortName">[6]</obj_property>
+               <obj_property name="ObjectShortName">[6]</obj_property>
+               <obj_property name="label">OVERFLOW</obj_property>
+            </wvobject>
+            <wvobject type="logic" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/STATUS_REGISTER/q[5]">
+               <obj_property name="DisplayName">label</obj_property>
+               <obj_property name="ElementShortName">[5]</obj_property>
+               <obj_property name="ObjectShortName">[5]</obj_property>
+               <obj_property name="label">UNUSED</obj_property>
+            </wvobject>
+            <wvobject type="logic" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/STATUS_REGISTER/q[4]">
+               <obj_property name="DisplayName">label</obj_property>
+               <obj_property name="ElementShortName">[4]</obj_property>
+               <obj_property name="ObjectShortName">[4]</obj_property>
+               <obj_property name="label">BREAKF</obj_property>
+            </wvobject>
+            <wvobject type="logic" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/STATUS_REGISTER/q[3]">
+               <obj_property name="DisplayName">label</obj_property>
+               <obj_property name="ElementShortName">[3]</obj_property>
+               <obj_property name="ObjectShortName">[3]</obj_property>
+               <obj_property name="label">DECIMAL</obj_property>
+            </wvobject>
+            <wvobject type="logic" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/STATUS_REGISTER/q[2]">
+               <obj_property name="DisplayName">label</obj_property>
+               <obj_property name="ElementShortName">[2]</obj_property>
+               <obj_property name="ObjectShortName">[2]</obj_property>
+               <obj_property name="label">INTERRUPT</obj_property>
+            </wvobject>
+            <wvobject type="logic" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/STATUS_REGISTER/q[1]">
+               <obj_property name="DisplayName">label</obj_property>
+               <obj_property name="ElementShortName">[1]</obj_property>
+               <obj_property name="ObjectShortName">[1]</obj_property>
+               <obj_property name="label">ZERO</obj_property>
+            </wvobject>
+            <wvobject type="logic" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/STATUS_REGISTER/q[0]">
+               <obj_property name="DisplayName">label</obj_property>
+               <obj_property name="ElementShortName">[0]</obj_property>
+               <obj_property name="ObjectShortName">[0]</obj_property>
+               <obj_property name="label">CARRY</obj_property>
+            </wvobject>
+         </wvobject>
+      </wvobject>
       <wvobject type="group" fp_name="group59">
          <obj_property name="label">ACC</obj_property>
          <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="isExpanded"></obj_property>
          <wvobject type="array" fp_name="/top_tb/DUT/cpu_inst/data_path_inst/ACC_d">
             <obj_property name="ElementShortName">ACC_d[7:0]</obj_property>
             <obj_property name="ObjectShortName">ACC_d[7:0]</obj_property>

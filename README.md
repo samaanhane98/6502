@@ -48,9 +48,9 @@ Eventually, all 6502 legal instructions will be supported. Currently, the follow
 - [ ] BPL
 - [ ] BVC
 - [ ] BVS
-- [ ] CLC
-- [ ] SEC
-- [ ] CLV
+- [x] CLC
+- [x] SEC
+- [x] CLV
 - [ ] DEX
 - [ ] DEY
 - [ ] INX
