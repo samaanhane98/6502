@@ -112,7 +112,7 @@ BEGIN
           END CASE;
         ELSIF decInstruction.instruction_group = SET_REG THEN
           CASE (decInstruction.addressing_mode) IS
-            WHEN ZERO_PAGE_X | ABSOLUTE =>
+            WHEN ZERO_PAGE_X | ZERO_PAGE_Y | ABSOLUTE =>
               next_state <= T0;
             WHEN OTHERS =>
               next_state <= T5;
@@ -396,6 +396,7 @@ BEGIN
               u_op.mux_addr := s_AB;
               -------------------------- 
 
+              u_op.alu_op := ADC;
               u_op.mux_adh := s_ALU;
               u_op.abh_en := '1';
 
@@ -468,6 +469,7 @@ BEGIN
               u_op.mux_addr := s_AB;
               -------------------------- 
 
+              u_op.alu_op := ADC;
               u_op.mux_adh := s_ALU;
               u_op.abh_en := '1';
 
@@ -528,8 +530,9 @@ BEGIN
               u_op.mux_ma := s_DATA;
               u_op.ma_en := '1';
 
-            WHEN ZERO_PAGE_X =>
-              u_op.mux_sb := s_RGX;
+            WHEN ZERO_PAGE_X | ZERO_PAGE_Y =>
+              u_op.mux_sb := s_RGX WHEN decInstruction.addressing_mode = ZERO_PAGE_X ELSE
+              s_RGY;
               u_op.mux_ai := s_SB;
               u_op.ai_en := '1';
 
@@ -576,6 +579,21 @@ BEGIN
               u_op.mux_bi := s_DB;
               u_op.bi_en := '1';
 
+            WHEN INDIRECT_INDEXED =>
+              ------- Addressing ------- 
+              u_op.mux_addr := s_MA;
+              -------------------------- 
+
+              u_op.mux_ma := s_DATA;
+              u_op.ma_en := '1';
+
+              u_op.mux_ai := s_ZERO;
+              u_op.ai_en := '1';
+
+              u_op.mux_db := s_DATA;
+              u_op.mux_bi := s_DB;
+              u_op.bi_en := '1';
+
             WHEN OTHERS =>
           END CASE;
         WHEN T3 =>
@@ -587,7 +605,7 @@ BEGIN
               u_op.mux_status := s_DATA;
               u_op.status_en(ZERO) := '1';
               u_op.status_en(NEGATIVE) := '1';
-            WHEN ZERO_PAGE_X =>
+            WHEN ZERO_PAGE_X | ZERO_PAGE_Y =>
               ------- Addressing ------- 
               u_op.mux_addr := s_AB;
               -------------------------- 
@@ -631,6 +649,24 @@ BEGIN
               u_op.abl_en := '1';
               u_op.mux_adh := s_ZERO;
               u_op.abh_en := '1';
+
+            WHEN INDIRECT_INDEXED =>
+              ------- Addressing ------- 
+              u_op.mux_addr := s_MA;
+              -------------------------- 
+
+              u_op.alu_op := AD_INC;
+              u_op.mux_ma := s_ALU;
+              u_op.ma_en := '1';
+
+              u_op.mux_sb := s_RGY;
+              u_op.mux_ai := s_SB;
+              u_op.ai_en := '1';
+
+              u_op.mux_db := s_DATA;
+              u_op.mux_bi := s_DB;
+              u_op.bi_en := '1';
+
             WHEN OTHERS =>
           END CASE;
         WHEN T4 =>
@@ -654,6 +690,7 @@ BEGIN
               u_op.mux_addr := s_AB;
               -------------------------- 
 
+              u_op.alu_op := ADC;
               u_op.mux_adh := s_ALU;
               u_op.abh_en := '1';
 
@@ -667,6 +704,23 @@ BEGIN
               u_op.abh_en := '1';
 
               u_op.alu_op := AD_INC;
+              u_op.mux_ai := s_ZERO;
+              u_op.ai_en := '1';
+
+              u_op.mux_db := s_DATA;
+              u_op.mux_bi := s_DB;
+              u_op.bi_en := '1';
+
+            WHEN INDIRECT_INDEXED =>
+              ------- Addressing ------- 
+              u_op.mux_addr := s_AB;
+              -------------------------- 
+              u_op.mux_adl := s_ALU;
+              u_op.abl_en := '1';
+              u_op.mux_adh := s_ZERO;
+              u_op.abh_en := '1';
+
+              u_op.alu_op := AD;
               u_op.mux_ai := s_ZERO;
               u_op.ai_en := '1';
 
@@ -691,6 +745,15 @@ BEGIN
               u_op.mux_adl := s_ALU;
               u_op.abl_en := '1';
               u_op.mux_adh := s_DATA;
+              u_op.abh_en := '1';
+
+            WHEN INDIRECT_INDEXED =>
+              ------- Addressing ------- 
+              u_op.mux_addr := s_AB;
+              -------------------------- 
+
+              u_op.alu_op := ADC;
+              u_op.mux_adh := s_ALU;
               u_op.abh_en := '1';
 
             WHEN OTHERS =>

@@ -68,8 +68,8 @@ Specific States:
             
             - Z-PAGE,Y: LDX $13 (b6 13)                     # X <- MEM[13h+Y]
                 T2: BI <- MEM[MAR]; AI <- Y
-                T3: MAR <- AI + BI;
-                T4: X <- MEM[MAR];  wrn; wrz;               # Via DB and SB    
+                T3: ABL <- AI + BI;
+                T4: X <- MEM[ABH/ABL];  wrn; wrz;               # Via DB and SB    
             
             - ABS: LDX $0001 (ae 01 00)                     # X <- MEM[0001h]
                 T2: ABL <- MEM[MAR]; MAR <- PC; PC++;

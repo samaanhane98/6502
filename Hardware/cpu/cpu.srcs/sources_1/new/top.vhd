@@ -31,22 +31,7 @@ ENTITY top IS
 END top;
 
 ARCHITECTURE behavioral OF top IS
-  -- ADC
-  -- SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"69", 1 => x"05", OTHERS => (OTHERS => '0')); -- IMM
-  -- SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"65", 1 => x"05", 5 => x"AB", OTHERS => (OTHERS => '0')); -- ZP
-  -- SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"75", 1 => x"04", 5 => x"AB", OTHERS => (OTHERS => '0')); -- ZPX
-  -- SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"6D", 1 => x"01", 2 => x"01", 257 => x"AA", OTHERS => (OTHERS => '0')); -- ABS
-  -- SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"7D", 1 => x"01", 2 => x"01", 257 => x"AA", OTHERS => (OTHERS => '0')); -- ABSX
-  -- SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"69", 1 => x"10", 16 => x"0D", OTHERS => (OTHERS => '0'));
-
-  -- LDA
-  -- SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"A5", 1 => x"10", 16 => x"00", OTHERS => (OTHERS => '0')); -- ZPX
-  -- SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"AE", 1 => x"01", 2 => x"01", 257 => x"AA", OTHERS => (OTHERS => '0')); -- ABS
-  -- SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"BD", 1 => x"01", 2 => x"01", 257 => x"AA", OTHERS => (OTHERS => '0')); -- ABSX
-  -- LDY
-  -- SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"BC", 1 => x"01", 2 => x"01", 257 => x"AA", OTHERS => (OTHERS => '0')); -- ABSX
-  -- SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"B9", 1 => x"01", 2 => x"01", 257 => x"AA", OTHERS => (OTHERS => '0')); -- ABSY
-  SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"A1", 1 => x"10", 16 => x"01", 17 => x"01", 257 => x"AA", OTHERS => (OTHERS => '0')); -- ABSY
+  SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"A0", 1 => x"01", 2 => x"B1", 3 => x"0F", 16 => x"01", 17 => x"01", 257 => x"AA", OTHERS => (OTHERS => '0')); -- Indexed_Indirect
 
   SIGNAL data_in : STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL data_out : STD_LOGIC_VECTOR(7 DOWNTO 0);

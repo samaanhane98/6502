@@ -16,23 +16,23 @@ The following instructions will be supported:
 - - [x] Indirect Indexed
 - - [x] Indexed Indirect
 
-- [ ] LDA
+- [x] LDA
 - - [x] IMM
 - - [x] ZERO PAGE
 - - [x] ZERO PAGE X
 - - [x] ABS
 - - [x] ABS,X
 - - [x] ABS,Y
-- - [ ] Indexed Indirect
-- - [ ] Indirect Indexed
+- - [x] Indexed Indirect
+- - [x] Indirect Indexed
 
-- [ ] LDX
+- [x] LDX
 - - [x] IMM
 - - [x] ZERO PAGE
 - - [x] ABS
 - - [x] ABS,Y
 
-- [ ] LDY
+- [x] LDY
 - - [x] IMM
 - - [x] ZERO PAGE
 - - [x] ZERO PAGE X

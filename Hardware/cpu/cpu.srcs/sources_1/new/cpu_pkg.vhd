@@ -47,7 +47,7 @@ PACKAGE cpu_pkg IS
   TYPE CPU_STATE IS (T0, T1, T2, T3, T4, T5, T6, T7);
 
   -- Instruction types
-  TYPE ADDRESSING_MODE IS (IMPL, IMM, ZERO_PAGE, ZERO_PAGE_X, ABSOLUTE, ABSOLUTE_X, ABSOLUTE_Y, INDEXED_INDIRECT, INDIRECT_INDEXED);
+  TYPE ADDRESSING_MODE IS (IMPL, IMM, ZERO_PAGE, ZERO_PAGE_X, ZERO_PAGE_Y, ABSOLUTE, ABSOLUTE_X, ABSOLUTE_Y, INDEXED_INDIRECT, INDIRECT_INDEXED);
   TYPE INSTRUCTION_GROUP IS (NONE, SET_REG);
   TYPE INSTRUCTION_TYPE IS (
     NOP, ADC, LDA, LDX, LDY
@@ -280,8 +280,62 @@ PACKAGE BODY cpu_pkg IS
         o_instr.addressing_mode := INDEXED_INDIRECT;
         o_instr.instruction_length := 2;
 
+      WHEN x"B1" =>
+        o_instr.instruction_type := LDA;
+        o_instr.instruction_group := SET_REG;
+        o_instr.addressing_mode := INDIRECT_INDEXED;
+        o_instr.instruction_length := 2;
+
+      WHEN x"A2" =>
+        o_instr.instruction_type := LDX;
+        o_instr.instruction_group := SET_REG;
+        o_instr.addressing_mode := IMM;
+        o_instr.instruction_length := 2;
+
+      WHEN x"A6" =>
+        o_instr.instruction_type := LDX;
+        o_instr.instruction_group := SET_REG;
+        o_instr.addressing_mode := ZERO_PAGE;
+        o_instr.instruction_length := 2;
+
+      WHEN x"B6" =>
+        o_instr.instruction_type := LDX;
+        o_instr.instruction_group := SET_REG;
+        o_instr.addressing_mode := ZERO_PAGE_Y;
+        o_instr.instruction_length := 2;
+
       WHEN x"AE" =>
         o_instr.instruction_type := LDX;
+        o_instr.instruction_group := SET_REG;
+        o_instr.addressing_mode := ABSOLUTE;
+        o_instr.instruction_length := 3;
+
+      WHEN x"BE" =>
+        o_instr.instruction_type := LDX;
+        o_instr.instruction_group := SET_REG;
+        o_instr.addressing_mode := ABSOLUTE_Y;
+        o_instr.instruction_length := 3;
+
+      WHEN x"A0" =>
+        o_instr.instruction_type := LDY;
+        o_instr.instruction_group := SET_REG;
+        o_instr.addressing_mode := IMM;
+        o_instr.instruction_length := 2;
+
+      WHEN x"A4" =>
+        o_instr.instruction_type := LDY;
+        o_instr.instruction_group := SET_REG;
+        o_instr.addressing_mode := ZERO_PAGE;
+        o_instr.instruction_length := 2;
+
+      WHEN x"B4" =>
+        o_instr.instruction_type := LDY;
+        o_instr.instruction_group := SET_REG;
+        o_instr.addressing_mode := ZERO_PAGE_X;
+        o_instr.instruction_length := 2;
+
+      WHEN x"AC" =>
+        o_instr.instruction_type := LDY;
         o_instr.instruction_group := SET_REG;
         o_instr.addressing_mode := ABSOLUTE;
         o_instr.instruction_length := 3;
@@ -291,6 +345,7 @@ PACKAGE BODY cpu_pkg IS
         o_instr.instruction_group := SET_REG;
         o_instr.addressing_mode := ABSOLUTE_X;
         o_instr.instruction_length := 3;
+
       WHEN OTHERS =>
         o_instr.instruction_type := NOP;
         o_instr.instruction_group := NONE;
@@ -308,6 +363,7 @@ PACKAGE BODY cpu_pkg IS
       WHEN IMPL => RETURN "Implied";
       WHEN ZERO_PAGE => RETURN "Zero Page";
       WHEN ZERO_PAGE_X => RETURN "Zero Page X";
+      WHEN ZERO_PAGE_Y => RETURN "Zero Page Y";
       WHEN ABSOLUTE => RETURN "Absolute";
       WHEN ABSOLUTE_X => RETURN "Absolute,X";
       WHEN ABSOLUTE_Y => RETURN "Absolute,Y";
