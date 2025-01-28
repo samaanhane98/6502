@@ -19,6 +19,7 @@ pub enum AddressingMode {
 pub fn instruction_cycles(instruction: u8) -> u8 {
     match instruction {
         0x0 => 0,
+        0x18 | 0x38 | 0xB8 | 0xEA => 2,
         0x69 | 0x29 | 0x0A | 0x90 | 0xA9 | 0xA2 | 0xA0 => 4,
         0x65 | 0x25 | 0xA5 | 0xA6 | 0xA4 => 5,
         0x75 | 0x6D | 0x7D | 0x79 | 0x35 | 0x2D | 0x3D | 0x39 | 0xB5 | 0xAD | 0xB6 | 0xAE
@@ -199,6 +200,15 @@ pub fn execute(cpu: &mut Processor) {
         }
         _ => {}
     }
+
+    // ? status instructions
+    match pc_data[0] {
+        0x18 | 0x38 | 0xB8 => {
+            status(cpu, pc_data[0]);
+            cpu.pc -= 1;
+        }
+        _ => {}
+    }
 }
 
 pub fn adc(cpu: &mut Processor, mode: AddressingMode) {
@@ -349,6 +359,15 @@ pub fn ldy(cpu: &mut Processor, mode: AddressingMode) {
                 .set(Flags::NEGATIVE, mem_val & 0b1000_0000 == 0b1000_0000);
             cpu.regy = mem_val;
         }
+    }
+}
+
+pub fn status(cpu: &mut Processor, instr: u8) {
+    match instr {
+        0x18 => cpu.status.set(Flags::CARRY, false),
+        0x38 => cpu.status.set(Flags::CARRY, true),
+        0xB8 => cpu.status.set(Flags::OVERFLOW, false),
+        _ => unreachable!(),
     }
 }
 

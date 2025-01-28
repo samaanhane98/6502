@@ -53,7 +53,8 @@ BEGIN
   alu_res <= tmp_result(7 DOWNTO 0);
 
   -- Status symbols
-  overflow_out <= '1'; -- TODO
+  overflow_out <= '1' WHEN op_ai(7) = op_bi(7) AND op_ai(7) /= tmp_result(7) ELSE
+    '0';
   carry_out <= tmp_result(8) WHEN operation = ADC ELSE
     '0';
 
