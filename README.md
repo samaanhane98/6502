@@ -22,7 +22,7 @@ The following instructions will be supported:
 - - [x] ZERO PAGE X
 - - [x] ABS
 - - [x] ABS,X
-- - [ ] ABS,Y
+- - [x] ABS,Y
 - - [ ] Indirect Indexed
 - - [ ] Indexed Indirect
 
@@ -30,7 +30,7 @@ The following instructions will be supported:
 - - [x] IMM
 - - [x] ZERO PAGE
 - - [x] ABS
-- - [ ] ABS,Y
+- - [x] ABS,Y
 
 - [ ] LDY
 - - [x] IMM

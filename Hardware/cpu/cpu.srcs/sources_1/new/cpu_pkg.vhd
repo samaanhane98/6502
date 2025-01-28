@@ -268,6 +268,12 @@ PACKAGE BODY cpu_pkg IS
         o_instr.addressing_mode := ABSOLUTE_X;
         o_instr.instruction_length := 3;
 
+      WHEN x"B9" =>
+        o_instr.instruction_type := LDA;
+        o_instr.instruction_group := SET_REG;
+        o_instr.addressing_mode := ABSOLUTE_Y;
+        o_instr.instruction_length := 3;
+
       WHEN x"AE" =>
         o_instr.instruction_type := LDX;
         o_instr.instruction_group := SET_REG;

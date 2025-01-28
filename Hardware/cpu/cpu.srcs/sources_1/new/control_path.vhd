@@ -112,13 +112,10 @@ BEGIN
           END CASE;
         ELSIF decInstruction.instruction_group = SET_REG THEN
           CASE (decInstruction.addressing_mode) IS
-            WHEN ZERO_PAGE_X =>
+            WHEN ZERO_PAGE_X | ABSOLUTE =>
               next_state <= T0;
-            WHEN ABSOLUTE =>
-              next_state <= T0;
-            WHEN ABSOLUTE_X =>
-              next_state <= T5;
             WHEN OTHERS =>
+              next_state <= T5;
           END CASE;
         END IF;
 
@@ -547,7 +544,7 @@ BEGIN
               u_op.mux_adl := s_DATA;
               u_op.abl_en := '1';
 
-            WHEN ABSOLUTE_X =>
+            WHEN ABSOLUTE_X | ABSOLUTE_Y =>
               ------- Addressing ------- 
               u_op.mux_addr := s_MA;
               -------------------------- 
@@ -556,7 +553,8 @@ BEGIN
               u_op.mux_ma := s_PC;
               u_op.ma_en := '1';
 
-              u_op.mux_sb := s_RGX;
+              u_op.mux_sb := s_RGX WHEN decInstruction.addressing_mode = ABSOLUTE_X ELSE
+              s_RGY;
               u_op.mux_ai := s_SB;
               u_op.ai_en := '1';
 
@@ -591,7 +589,7 @@ BEGIN
               u_op.mux_adh := s_DATA;
               u_op.abh_en := '1';
 
-            WHEN ABSOLUTE_X =>
+            WHEN ABSOLUTE_X | ABSOLUTE_Y =>
               ------- Addressing ------- 
               u_op.mux_addr := s_MA;
               -------------------------- 
@@ -627,7 +625,7 @@ BEGIN
               u_op.status_en(ZERO) := '1';
               u_op.status_en(NEGATIVE) := '1';
 
-            WHEN ABSOLUTE_X =>
+            WHEN ABSOLUTE_X | ABSOLUTE_Y =>
               ------- Addressing ------- 
               u_op.mux_addr := s_AB;
               -------------------------- 
