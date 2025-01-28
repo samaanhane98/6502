@@ -45,7 +45,8 @@ ARCHITECTURE behavioral OF top IS
   -- SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"BD", 1 => x"01", 2 => x"01", 257 => x"AA", OTHERS => (OTHERS => '0')); -- ABSX
   -- LDY
   -- SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"BC", 1 => x"01", 2 => x"01", 257 => x"AA", OTHERS => (OTHERS => '0')); -- ABSX
-  SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"B9", 1 => x"01", 2 => x"01", 257 => x"AA", OTHERS => (OTHERS => '0')); -- ABSY
+  -- SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"B9", 1 => x"01", 2 => x"01", 257 => x"AA", OTHERS => (OTHERS => '0')); -- ABSY
+  SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"A1", 1 => x"10", 16 => x"01", 17 => x"01", 257 => x"AA", OTHERS => (OTHERS => '0')); -- ABSY
 
   SIGNAL data_in : STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL data_out : STD_LOGIC_VECTOR(7 DOWNTO 0);

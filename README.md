@@ -23,8 +23,8 @@ The following instructions will be supported:
 - - [x] ABS
 - - [x] ABS,X
 - - [x] ABS,Y
-- - [ ] Indirect Indexed
 - - [ ] Indexed Indirect
+- - [ ] Indirect Indexed
 
 - [ ] LDX
 - - [x] IMM
