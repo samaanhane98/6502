@@ -39,7 +39,7 @@ ENTITY cpu IS
     data_in : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
     data_out : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
     address : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
-    rw_out : OUT RW
+    rw_out : OUT STD_LOGIC
   );
 END cpu;
 
@@ -49,7 +49,6 @@ ARCHITECTURE behavioral OF cpu IS
   SIGNAL n_clk : STD_LOGIC;
 BEGIN
   rw_out <= u_operation.wr_mem;
-
   n_clk <= NOT clk;
 
   data_path_inst : ENTITY work.data_path

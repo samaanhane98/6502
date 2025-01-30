@@ -38,13 +38,33 @@ ARCHITECTURE behavioral OF top_tb IS
 
   SIGNAL clk : STD_LOGIC := '0';
   SIGNAL rst : STD_LOGIC := '1';
+  SIGNAL debug_led : STD_LOGIC := '1';
+
+  SIGNAL rw : STD_LOGIC;
+  SIGNAL address : STD_LOGIC_VECTOR(15 DOWNTO 0);
+  SIGNAL data_w, data_r : STD_LOGIC_VECTOR(7 DOWNTO 0);
 
 BEGIN
 
-  DUT : ENTITY work.top
+  ram_inst : ENTITY work.ram
     PORT MAP(
       clk => clk,
-      rst => rst
+      rst => rst,
+      rw => rw,
+      address => address,
+      data_w => data_w,
+      data_r => data_r
+    );
+
+  top_inst : ENTITY work.top
+    PORT MAP(
+      clk => clk,
+      rst => rst,
+      address => address,
+      data_w => data_w,
+      data_r => data_r,
+      rw => rw,
+      debug_led => debug_led
     );
 
   clk <= NOT clk AFTER CLK_PERIOD / 2;

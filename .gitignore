@@ -1,3 +1,6 @@
 /Hardware/cpu/cpu.cache
 /Hardware/cpu/cpu.hw
 /Hardware/cpu/cpu.sim
+/Hardware/cpu/cpu.runs
+/Hardware/cpu/cpu.gen
+/Hardware/cpu/cpu.ip_user_files

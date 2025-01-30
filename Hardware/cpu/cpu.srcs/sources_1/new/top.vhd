@@ -26,26 +26,23 @@ USE work.cpu_pkg.ALL;
 ENTITY top IS
   PORT (
     clk : IN STD_LOGIC;
-    rst : IN STD_LOGIC
+    rst : IN STD_LOGIC;
+    address : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
+    data_w : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
+    data_r : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+    rw : OUT STD_LOGIC;
+    debug_led : OUT STD_LOGIC
   );
 END top;
 
 ARCHITECTURE behavioral OF top IS
-  SIGNAL memory : MEMORY(0 TO 65534) := (0 => x"A9", 1 => x"10", 2 => x"8D", 3 => x"05", 4 => x"00", OTHERS => (OTHERS => '0'));
-
-  SIGNAL data_in : STD_LOGIC_VECTOR(7 DOWNTO 0);
-  SIGNAL data_out : STD_LOGIC_VECTOR(7 DOWNTO 0);
-  SIGNAL address : STD_LOGIC_VECTOR(15 DOWNTO 0);
-  SIGNAL rw : RW;
-
+  SIGNAL tmp_clk : STD_LOGIC_VECTOR(20 DOWNTO 0);
 BEGIN
-  RAM_WR : PROCESS (clk)
+
+  PROCESS (clk)
   BEGIN
     IF rising_edge(clk) THEN
-      IF rw = WRITE_ENABLE THEN
-        memory(to_integer(unsigned(address))) <= data_out;
-      END IF;
-      data_in <= memory(to_integer(unsigned(address)));
+      debug_led <= data_r(0);
     END IF;
   END PROCESS;
 
@@ -56,8 +53,8 @@ BEGIN
     PORT MAP(
       clk => clk,
       rst => rst,
-      data_in => data_in,
-      data_out => data_out,
+      data_in => data_r,
+      data_out => data_w,
       address => address,
       RW_out => rw
     );

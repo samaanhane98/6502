@@ -1,0 +1,302 @@
+{
+  "design": {
+    "design_info": {
+      "boundary_crc": "0xB1C90CA9F10C287A",
+      "device": "xc7z020clg400-1",
+      "gen_directory": "../../../../cpu.gen/sources_1/bd/design_1",
+      "name": "design_1",
+      "rev_ctrl_bd_flag": "RevCtrlBdOff",
+      "synth_flow_mode": "Hierarchical",
+      "tool_version": "2023.1",
+      "validated": "true"
+    },
+    "design_tree": {
+      "c_counter_binary_0": "",
+      "xlslice_0": "",
+      "clock_buffer_0": "",
+      "top_0": "",
+      "ram_0": ""
+    },
+    "ports": {
+      "clk_in": {
+        "type": "clk",
+        "direction": "I",
+        "parameters": {
+          "ASSOCIATED_RESET": {
+            "value": "reset_rtl"
+          },
+          "CLK_DOMAIN": {
+            "value": "design_1_sys_clock",
+            "value_src": "default"
+          },
+          "FREQ_HZ": {
+            "value": "125000000"
+          },
+          "FREQ_TOLERANCE_HZ": {
+            "value": "0",
+            "value_src": "default"
+          },
+          "INSERT_VIP": {
+            "value": "0",
+            "value_src": "default"
+          },
+          "PHASE": {
+            "value": "0.0"
+          }
+        }
+      },
+      "debug_led_0": {
+        "direction": "O"
+      },
+      "reset_rtl": {
+        "type": "rst",
+        "direction": "I",
+        "parameters": {
+          "INSERT_VIP": {
+            "value": "0",
+            "value_src": "default"
+          },
+          "POLARITY": {
+            "value": "ACTIVE_HIGH"
+          }
+        }
+      }
+    },
+    "components": {
+      "c_counter_binary_0": {
+        "vlnv": "xilinx.com:ip:c_counter_binary:12.0",
+        "xci_name": "design_1_c_counter_binary_0_0",
+        "xci_path": "ip/design_1_c_counter_binary_0_0/design_1_c_counter_binary_0_0.xci",
+        "inst_hier_path": "c_counter_binary_0",
+        "parameters": {
+          "Output_Width": {
+            "value": "28"
+          }
+        }
+      },
+      "xlslice_0": {
+        "vlnv": "xilinx.com:ip:xlslice:1.0",
+        "xci_name": "design_1_xlslice_0_0",
+        "xci_path": "ip/design_1_xlslice_0_0/design_1_xlslice_0_0.xci",
+        "inst_hier_path": "xlslice_0",
+        "parameters": {
+          "DIN_FROM": {
+            "value": "27"
+          },
+          "DIN_TO": {
+            "value": "27"
+          },
+          "DIN_WIDTH": {
+            "value": "28"
+          }
+        }
+      },
+      "clock_buffer_0": {
+        "vlnv": "xilinx.com:module_ref:clock_buffer:1.0",
+        "xci_name": "design_1_clock_buffer_0_0",
+        "xci_path": "ip/design_1_clock_buffer_0_0/design_1_clock_buffer_0_0.xci",
+        "inst_hier_path": "clock_buffer_0",
+        "reference_info": {
+          "ref_type": "hdl",
+          "ref_name": "clock_buffer",
+          "boundary_crc": "0x0"
+        },
+        "ports": {
+          "clk_in": {
+            "direction": "I",
+            "parameters": {
+              "FREQ_HZ": {
+                "value": "125000000",
+                "value_src": "user_prop"
+              },
+              "PHASE": {
+                "value": "0.0",
+                "value_src": "user_prop"
+              },
+              "CLK_DOMAIN": {
+                "value": "design_1_sys_clock",
+                "value_src": "default_prop"
+              }
+            }
+          },
+          "clk_out": {
+            "direction": "O"
+          },
+          "enable": {
+            "direction": "I"
+          }
+        }
+      },
+      "top_0": {
+        "vlnv": "xilinx.com:module_ref:top:1.0",
+        "xci_name": "design_1_top_0_0",
+        "xci_path": "ip/design_1_top_0_0/design_1_top_0_0.xci",
+        "inst_hier_path": "top_0",
+        "reference_info": {
+          "ref_type": "hdl",
+          "ref_name": "top",
+          "boundary_crc": "0x0"
+        },
+        "ports": {
+          "clk": {
+            "type": "clk",
+            "direction": "I",
+            "parameters": {
+              "ASSOCIATED_RESET": {
+                "value": "rst",
+                "value_src": "constant"
+              }
+            }
+          },
+          "rst": {
+            "type": "rst",
+            "direction": "I",
+            "parameters": {
+              "POLARITY": {
+                "value": "ACTIVE_HIGH",
+                "value_src": "user_prop"
+              }
+            }
+          },
+          "address": {
+            "direction": "O",
+            "left": "15",
+            "right": "0"
+          },
+          "data_w": {
+            "direction": "O",
+            "left": "7",
+            "right": "0"
+          },
+          "data_r": {
+            "direction": "I",
+            "left": "7",
+            "right": "0"
+          },
+          "rw": {
+            "direction": "O"
+          },
+          "debug_led": {
+            "direction": "O"
+          }
+        }
+      },
+      "ram_0": {
+        "vlnv": "xilinx.com:module_ref:ram:1.0",
+        "xci_name": "design_1_ram_0_0",
+        "xci_path": "ip/design_1_ram_0_0/design_1_ram_0_0.xci",
+        "inst_hier_path": "ram_0",
+        "reference_info": {
+          "ref_type": "hdl",
+          "ref_name": "ram",
+          "boundary_crc": "0x0"
+        },
+        "ports": {
+          "clk": {
+            "type": "clk",
+            "direction": "I",
+            "parameters": {
+              "ASSOCIATED_RESET": {
+                "value": "rst",
+                "value_src": "constant"
+              }
+            }
+          },
+          "rst": {
+            "type": "rst",
+            "direction": "I",
+            "parameters": {
+              "POLARITY": {
+                "value": "ACTIVE_HIGH",
+                "value_src": "user_prop"
+              }
+            }
+          },
+          "rw": {
+            "direction": "I"
+          },
+          "address": {
+            "direction": "I",
+            "left": "15",
+            "right": "0"
+          },
+          "data_w": {
+            "direction": "I",
+            "left": "7",
+            "right": "0"
+          },
+          "data_r": {
+            "direction": "O",
+            "left": "7",
+            "right": "0"
+          }
+        }
+      }
+    },
+    "nets": {
+      "c_counter_binary_0_Q": {
+        "ports": [
+          "c_counter_binary_0/Q",
+          "xlslice_0/Din"
+        ]
+      },
+      "clk_in_1": {
+        "ports": [
+          "clk_in",
+          "c_counter_binary_0/CLK",
+          "clock_buffer_0/clk_in"
+        ]
+      },
+      "clock_buffer_0_clk_out": {
+        "ports": [
+          "top_0/debug_led",
+          "debug_led_0"
+        ]
+      },
+      "clock_buffer_0_clk_out1": {
+        "ports": [
+          "clock_buffer_0/clk_out",
+          "top_0/clk",
+          "ram_0/clk"
+        ]
+      },
+      "ram_0_data_r": {
+        "ports": [
+          "ram_0/data_r",
+          "top_0/data_r"
+        ]
+      },
+      "reset_rtl_1": {
+        "ports": [
+          "reset_rtl",
+          "top_0/rst",
+          "ram_0/rst"
+        ]
+      },
+      "top_0_address": {
+        "ports": [
+          "top_0/address",
+          "ram_0/address"
+        ]
+      },
+      "top_0_data_w": {
+        "ports": [
+          "top_0/data_w",
+          "ram_0/data_w"
+        ]
+      },
+      "top_0_rw": {
+        "ports": [
+          "top_0/rw",
+          "ram_0/rw"
+        ]
+      },
+      "xlslice_0_Dout": {
+        "ports": [
+          "xlslice_0/Dout",
+          "clock_buffer_0/enable"
+        ]
+      }
+    }
+  }
+}

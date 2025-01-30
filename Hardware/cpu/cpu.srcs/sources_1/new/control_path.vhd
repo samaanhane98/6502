@@ -847,7 +847,7 @@ BEGIN
           CASE (decInstruction.addressing_mode) IS
             WHEN ABSOLUTE =>
               u_op.mux_addr := s_AB;
-              u_op.wr_mem := WRITE_ENABLE;
+              u_op.wr_mem := '1';
               u_op.mux_db := s_ACC;
               u_op.mux_dout := s_DB;
             WHEN OTHERS =>

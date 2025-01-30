@@ -69,7 +69,6 @@ PACKAGE cpu_pkg IS
   FUNCTION to_string(di : DECODED_INSTRUCTION) RETURN STRING;
 
   -- Micro operations
-  TYPE RW IS (READ_ENABLE, WRITE_ENABLE);
   TYPE ALU_OPERATION IS (ADC, AD, AD_INC);
 
   TYPE mux_db_t IS (s_DATA, s_ACC, s_PCL, s_PCH, s_SB);
@@ -86,7 +85,7 @@ PACKAGE cpu_pkg IS
   TYPE mux_acc_t IS (s_SB, s_DB);
   TYPE mux_status_t IS (s_ALU, s_DATA, s_IMPL);
   TYPE MICRO_OPERATION IS RECORD
-    wr_mem : RW; -- WRITE/READ operation
+    wr_mem : STD_LOGIC; -- WRITE/READ operation
     alu_op : ALU_OPERATION;
     status_val : STD_LOGIC;
 
@@ -129,7 +128,7 @@ END PACKAGE;
 PACKAGE BODY cpu_pkg IS
   PROCEDURE reset (VARIABLE u_op : INOUT MICRO_OPERATION) IS
   BEGIN
-    u_op.wr_mem := READ_ENABLE;
+    u_op.wr_mem := '0';
     u_op.alu_op := ADC;
     u_op.status_val := '0';
     u_op.pcl_en := '0';
