@@ -39,7 +39,8 @@ ENTITY cpu IS
     data_in : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
     data_out : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
     address : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
-    rw_out : OUT STD_LOGIC
+    rw_out : OUT STD_LOGIC;
+    debug_acc_out : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
   );
 END cpu;
 
@@ -58,7 +59,8 @@ BEGIN
       u_operation => u_operation,
       data_in => data_in,
       data_out => data_out,
-      address => address
+      address => address,
+      debug_acc_out => debug_acc_out
     );
 
   control_path_inst : ENTITY work.control_path PORT MAP (

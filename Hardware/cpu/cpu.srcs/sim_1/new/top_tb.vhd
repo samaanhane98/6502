@@ -51,11 +51,11 @@ BEGIN
   ram_inst : ENTITY work.ram
     PORT MAP(
       clk => clk,
+      rst => rst,
       rw => rw,
       address => address,
       data_w => data_w,
-      data_r => data_r,
-      debug_acc => debug_acc
+      data_r => data_r
     );
 
   top_inst : ENTITY work.top

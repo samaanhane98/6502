@@ -30,13 +30,19 @@ ENTITY top IS
     address : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
     data_w : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
     data_r : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-    rw : OUT STD_LOGIC
+    rw : OUT STD_LOGIC;
+    debug_acc_out : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
   );
 END top;
 
 ARCHITECTURE behavioral OF top IS
   SIGNAL tmp_clk : STD_LOGIC_VECTOR(20 DOWNTO 0);
+
+  SIGNAL cpu_dbg : STD_LOGIC_VECTOR(7 DOWNTO 0);
+
 BEGIN
+  debug_acc_out <= cpu_dbg(3 DOWNTO 0);
+
   cpu_inst : ENTITY work.cpu
     GENERIC MAP(
       PC_INIT => x"0000"
@@ -47,6 +53,7 @@ BEGIN
       data_in => data_r,
       data_out => data_w,
       address => address,
-      RW_out => rw
+      RW_out => rw,
+      debug_acc_out => cpu_dbg
     );
 END behavioral;

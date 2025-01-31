@@ -30,11 +30,10 @@ USE work.cpu_pkg.ALL;
 
 ENTITY alu IS
   PORT (
-    rst : IN STD_LOGIC;
     operation : IN ALU_OPERATION;
     op_ai : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
     op_bi : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-    carry : IN INTEGER;
+    carry : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
     alu_res : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
 
     -- Status signals
@@ -52,7 +51,7 @@ BEGIN
   alu_res <= tmp_result(7 DOWNTO 0);
 
   -- Done like this so no latch is inferred
-  tmp_result <= "0" & STD_LOGIC_VECTOR(unsigned(op_ai) + unsigned(op_bi) + carry) WHEN operation = ADC ELSE
+  tmp_result <= "0" & STD_LOGIC_VECTOR(unsigned(op_ai) + unsigned(op_bi) + unsigned(carry)) WHEN operation = ADC ELSE
     "0" & STD_LOGIC_VECTOR(unsigned(op_ai) + unsigned(op_bi)) WHEN operation = AD ELSE
     "0" & STD_LOGIC_VECTOR(unsigned(op_ai) + unsigned(op_bi) + 1) WHEN operation = AD_INC ELSE
     (OTHERS => '0');
