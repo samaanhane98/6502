@@ -960,45 +960,48 @@ BEGIN
   --   stat_u_op <= u_op;
   -- END PROCESS;
 
-  -- JMP_instr : PROCESS (ALL)
-  --   VARIABLE u_op : MICRO_OPERATION;
-  -- BEGIN
-  --   reset(u_op);
-  --   IF decInstruction.instruction_type = JMP THEN
-  --     CASE state IS
-  --       WHEN T2 =>
-  --         CASE (decInstruction.addressing_mode) IS
-  --           WHEN ABSOLUTE =>
-  --             ------- Addressing ------- 
-  --             address_pc(u_op);
-  --             -------------------------- 
+  JMP_instr : PROCESS (ALL)
+    VARIABLE u_op : MICRO_OPERATION;
+  BEGIN
+    reset(u_op);
+    IF decInstruction.instruction_type = JMP THEN
+      CASE state IS
+        WHEN T2 =>
+          CASE (decInstruction.addressing_mode) IS
+            WHEN ABSOLUTE =>
+              ------- Addressing ------- 
+              address_pc(u_op);
+              -------------------------- 
 
-  --             increment_pc(u_op);
+              increment_pc(u_op);
 
-  --             u_op.alu_op := AD;
-  --             u_op.mux_ai := s_ZERO;
-  --             u_op.ai_en := '1';
+              u_op.alu_op := AD;
+              u_op.mux_ai := s_ZERO;
+              u_op.ai_en := '1';
 
-  --             u_op.mux_db := s_DATA;
-  --             u_op.mux_bi := s_DB;
-  --             u_op.bi_en := '1';
+              u_op.mux_db := s_DATA;
+              u_op.mux_bi := s_DB;
+              u_op.bi_en := '1';
 
-  --           WHEN OTHERS =>
-  --         END CASE;
-  --       WHEN T3 =>
-  --         CASE (decInstruction.addressing_mode) IS
-  --           WHEN ABSOLUTE =>
-  --             u_op.mux_pc := s_JMP;
-  --             u_op.mux_db := s_DATA;
-  --             u_op.mux_sb := s_ALU;
-  --             u_op.pcl_en := '1';
-  --             u_op.pch_en := '1';
+            WHEN OTHERS =>
+              u_op := initial_op;
+          END CASE;
+        WHEN T3 =>
+          CASE (decInstruction.addressing_mode) IS
+            WHEN ABSOLUTE =>
+              u_op.mux_pc := s_JMP;
+              u_op.mux_db := s_DATA;
+              u_op.mux_sb := s_ALU;
+              u_op.pcl_en := '1';
+              u_op.pch_en := '1';
 
-  --           WHEN OTHERS =>
-  --         END CASE;
-  --       WHEN OTHERS =>
-  --     END CASE;
-  --   END IF;
-  --   jmp_u_op <= u_op;
-  -- END PROCESS;
+            WHEN OTHERS =>
+              u_op := initial_op;
+          END CASE;
+        WHEN OTHERS =>
+          u_op := initial_op;
+      END CASE;
+    END IF;
+    jmp_u_op <= u_op;
+  END PROCESS;
 END behavioral;

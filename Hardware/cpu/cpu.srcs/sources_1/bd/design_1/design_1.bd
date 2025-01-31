@@ -82,10 +82,10 @@
         "inst_hier_path": "xlslice_0",
         "parameters": {
           "DIN_FROM": {
-            "value": "27"
+            "value": "22"
           },
           "DIN_TO": {
-            "value": "27"
+            "value": "22"
           },
           "DIN_WIDTH": {
             "value": "28"

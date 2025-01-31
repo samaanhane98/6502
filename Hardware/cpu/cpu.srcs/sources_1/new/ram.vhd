@@ -35,7 +35,7 @@ END ram;
 
 ARCHITECTURE Behavioral OF ram IS
   -- SIGNAL memory : MEMORY(0 TO 63) := (0 => x"69", 1 => x"01", 2 => x"8D", 3 => x"10", 4 => x"00", 5 => x"4C", 6 => x"00", 7 => x"00", 16 => x"00", OTHERS => (OTHERS => '0'));
-  SIGNAL memory : MEMORY(0 TO 63) := (0 => x"69", 1 => x"01", 2 => x"69", 3 => x"01", 4 => x"69", 5 => x"01", 6 => x"69", 7 => x"01", OTHERS => (OTHERS => '0'));
+  SIGNAL memory : MEMORY(0 TO 63) := (0 => x"69", 1 => x"01", 2 => x"4C", 3 => x"00", 4 => x"00", OTHERS => (OTHERS => '0'));
 
 BEGIN
 
@@ -47,8 +47,10 @@ BEGIN
       ELSE
         IF rw = '1' THEN
           memory(to_integer(unsigned(address))) <= data_w;
+        ELSE
+          data_r <= memory(to_integer(unsigned(address)));
         END IF;
-        data_r <= memory(to_integer(unsigned(address)));
+
       END IF;
     END IF;
   END PROCESS;
