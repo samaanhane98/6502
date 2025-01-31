@@ -30,7 +30,6 @@ USE work.cpu_pkg.ALL;
 
 ENTITY alu IS
   PORT (
-    clk : IN STD_LOGIC;
     rst : IN STD_LOGIC;
     operation : IN ALU_OPERATION;
     op_ai : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
@@ -52,7 +51,13 @@ BEGIN
 
   alu_res <= tmp_result(7 DOWNTO 0);
 
-  -- Status symbols
+  -- Done like this so no latch is inferred
+  tmp_result <= "0" & STD_LOGIC_VECTOR(unsigned(op_ai) + unsigned(op_bi) + carry) WHEN operation = ADC ELSE
+    "0" & STD_LOGIC_VECTOR(unsigned(op_ai) + unsigned(op_bi)) WHEN operation = AD ELSE
+    "0" & STD_LOGIC_VECTOR(unsigned(op_ai) + unsigned(op_bi) + 1) WHEN operation = AD_INC ELSE
+    (OTHERS => '0');
+
+  -- -- Status symbols
   overflow_out <= '1' WHEN op_ai(7) = op_bi(7) AND op_ai(7) /= tmp_result(7) ELSE
     '0';
   carry_out <= tmp_result(8) WHEN operation = ADC ELSE
@@ -63,17 +68,4 @@ BEGIN
   neg_out <= '1' WHEN tmp_result(7) = '1' ELSE
     '0';
 
-  PROCESS (ALL)
-  BEGIN
-    CASE (operation) IS
-      WHEN ADC =>
-        tmp_result <= "0" & STD_LOGIC_VECTOR(unsigned(op_ai) + unsigned(op_bi) + carry);
-      WHEN AD =>
-        tmp_result <= "0" & STD_LOGIC_VECTOR(unsigned(op_ai) + unsigned(op_bi));
-      WHEN AD_INC =>
-        tmp_result <= "0" & STD_LOGIC_VECTOR(unsigned(op_ai) + unsigned(op_bi) + 1);
-
-      WHEN OTHERS =>
-    END CASE;
-  END PROCESS;
 END behavioral;

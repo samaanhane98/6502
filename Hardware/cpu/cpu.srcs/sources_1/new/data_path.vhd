@@ -38,27 +38,28 @@ ENTITY data_path IS
 END data_path;
 
 ARCHITECTURE behavioral OF data_path IS
-  SIGNAL PC_in : STD_LOGIC_VECTOR(15 DOWNTO 0);
-  SIGNAL PCL_q, PCH_q : STD_LOGIC_VECTOR(7 DOWNTO 0);
+  SIGNAL PC_in : STD_LOGIC_VECTOR(15 DOWNTO 0) := (OTHERS => '0');
+  SIGNAL PCL_q, PCH_q : STD_LOGIC_VECTOR(7 DOWNTO 0) := (OTHERS => '0');
 
   -- BUSSES
-  SIGNAL ADL, ADH, DB, SB : STD_LOGIC_VECTOR(7 DOWNTO 0);
+  SIGNAL ADL, ADH, DB, SB : STD_LOGIC_VECTOR(7 DOWNTO 0) := (OTHERS => '0');
 
   -- REGISTERS
-  SIGNAL AI_q, AI_d, BI_q, BI_d, ACC_q, ACC_d, RGX_q, RGX_d, RGY_q, RGY_d, ABL_q, ABH_q : STD_LOGIC_VECTOR(7 DOWNTO 0);
+  SIGNAL AI_q, AI_d, BI_q, BI_d, ACC_q, ACC_d, RGX_q, RGX_d, RGY_q, RGY_d, ABL_q, ABH_q : STD_LOGIC_VECTOR(7 DOWNTO 0) := (OTHERS => '0');
 
-  SIGNAL MA_q, MA_d : STD_LOGIC_VECTOR(15 DOWNTO 0);
+  SIGNAL MA_q, MA_d : STD_LOGIC_VECTOR(15 DOWNTO 0) := (OTHERS => '0');
 
-  SIGNAL carry_in : INTEGER;
+  SIGNAL carry_in : INTEGER := 0;
   SIGNAL alu_res : STD_LOGIC_VECTOR(7 DOWNTO 0);
-  SIGNAL status_q, status_d : STATUS;
+  SIGNAL status_q, status_d : STATUS := (OTHERS => '0');
 
-  SIGNAL status_alu : STATUS;
-  SIGNAL status_data_in : STATUS;
+  SIGNAL status_alu : STATUS := (OTHERS => '0');
+  SIGNAL status_data_in : STATUS := (OTHERS => '0');
 BEGIN
   -- Addressing
   ADDRESS_MUX : address <= MA_q WHEN u_operation.mux_addr = s_MA ELSE
-  ABH_q & ABL_q WHEN u_operation.mux_addr = s_AB;
+  ABH_q & ABL_q WHEN u_operation.mux_addr = s_AB ELSE
+  (OTHERS => '0');
 
   DATA_OUT_MUX : data_out <= DB WHEN u_operation.mux_dout = s_DB;
 
@@ -67,14 +68,16 @@ BEGIN
   ACC_q WHEN u_operation.mux_db = s_ACC ELSE
   PCL_q WHEN u_operation.mux_db = s_PCL ELSE
   PCH_q WHEN u_operation.mux_db = s_PCH ELSE
-  SB WHEN u_operation.mux_db = s_SB;
+  SB WHEN u_operation.mux_db = s_SB ELSE
+  (OTHERS => '0');
 
   MUX_SB : SB <= alu_res WHEN u_operation.mux_sb = s_ALU ELSE
   RGX_q WHEN u_operation.mux_sb = s_RGX ELSE
   RGY_q WHEN u_operation.mux_sb = s_RGY ELSE
   ACC_q WHEN u_operation.mux_sb = s_ACC ELSE
   ADH WHEN u_operation.mux_sb = s_ADH ELSE
-  DB WHEN u_operation.mux_sb = s_DB;
+  DB WHEN u_operation.mux_sb = s_DB ELSE
+  (OTHERS => '0');
 
   ADL_MUX : ADL <= PCL_q WHEN u_operation.mux_adl = s_PC ELSE
   alu_res WHEN u_operation.mux_adl = s_ALU ELSE
@@ -89,7 +92,6 @@ BEGIN
   carry_in <= 1 WHEN status_q(CARRY) = '1' ELSE
     0;
   ALU_inst : ENTITY work.alu PORT MAP (
-    clk => clk,
     rst => rst,
     operation => u_operation.alu_op,
     op_ai => AI_q,
@@ -105,7 +107,8 @@ BEGIN
   -- REGISTERS
   MA_MUX : MA_d <= PCH_q & PCL_q WHEN u_operation.mux_ma = s_PC ELSE
   x"00" & alu_res WHEN u_operation.mux_ma = s_ALU ELSE
-  x"00" & data_in WHEN u_operation.mux_ma = s_DATA;
+  x"00" & data_in WHEN u_operation.mux_ma = s_DATA ELSE
+  (OTHERS => '0');
 
   MA_REGISTER : ENTITY work.bits_register
     GENERIC MAP(
@@ -120,7 +123,8 @@ BEGIN
     );
 
   PC_MUX : PC_in <= STD_LOGIC_VECTOR(unsigned(pch_q) & unsigned(pcl_q) + 1) WHEN u_operation.mux_pc = s_INCR ELSE
-  DB & SB WHEN u_operation.mux_pc = s_JMP;
+  DB & SB WHEN u_operation.mux_pc = s_JMP ELSE
+  (OTHERS => '0');
 
   PCL_REGISTER : ENTITY work.bits_register
     GENERIC MAP(
@@ -171,7 +175,7 @@ BEGIN
     );
 
   AI_MUX : AI_d <= SB WHEN u_operation.mux_ai = s_SB ELSE
-  (OTHERS => '0') WHEN u_operation.mux_ai = s_ZERO;
+  (OTHERS => '0');
 
   AI_REGISTER : ENTITY work.bits_register
     GENERIC MAP(
@@ -229,7 +233,8 @@ BEGIN
     );
 
   ACC_MUX : ACC_d <= SB WHEN u_operation.mux_acc = s_SB ELSE
-  DB WHEN u_operation.mux_acc = s_DB;
+  DB WHEN u_operation.mux_acc = s_DB ELSE
+  (OTHERS => '0');
 
   ACC_REGISTER : ENTITY work.bits_register GENERIC MAP (
     WIDTH => 8
@@ -248,7 +253,8 @@ BEGIN
   '0';
 
   status_d(CARRY) <= status_alu(CARRY) WHEN u_operation.mux_status = s_ALU ELSE
-  u_operation.status_val WHEN u_operation.mux_status = s_IMPL;
+  u_operation.status_val WHEN u_operation.mux_status = s_IMPL ELSE
+  '0';
   status_d(ZERO) <= status_alu(ZERO) WHEN u_operation.mux_status = s_ALU ELSE
   status_data_in(ZERO);
   status_d(INTERRUPT) <= '0';

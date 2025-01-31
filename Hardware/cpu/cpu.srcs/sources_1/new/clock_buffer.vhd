@@ -17,10 +17,8 @@
 -- Additional Comments:
 -- 
 ----------------------------------------------------------------------------------
-
-
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -28,31 +26,26 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx leaf cells in this code.
-library UNISIM;
-use UNISIM.VComponents.all;
+LIBRARY UNISIM;
+USE UNISIM.VComponents.ALL;
 
-entity clock_buffer is
-  Port (
-  clk_in: in std_logic;
-  clk_out: out std_logic;
-  enable: in std_logic
+ENTITY clock_buffer IS
+   PORT (
+      clk_in : IN STD_LOGIC;
+      clk_out : OUT STD_LOGIC;
+      enable : IN STD_LOGIC
    );
-end clock_buffer;
+END clock_buffer;
 
-architecture Behavioral of clock_buffer is
-begin
+ARCHITECTURE Behavioral OF clock_buffer IS
+BEGIN
 
-BUFGCE_inst : BUFGCE
-generic map (
-   CE_TYPE => "SYNC",               -- ASYNC, HARDSYNC, SYNC
-   IS_CE_INVERTED => '0',           -- Programmable inversion on CE
-   IS_I_INVERTED => '0',            -- Programmable inversion on I
-   SIM_DEVICE => "ULTRASCALE"  -- ULTRASCALE, ULTRASCALE_PLUS
-)
-port map (
-   O => clk_out,   -- 1-bit output: Buffer
-   CE => enable, -- 1-bit input: Buffer enable
-   I => clk_in    -- 1-bit input: Buffer
-);
+   BUFGCE_inst : BUFGCE
 
-end Behavioral;
+   PORT MAP(
+      O => clk_out, -- 1-bit output: Clock output
+      CE => enable, -- 1-bit input: Clock enable input for I0
+      I => clk_in -- 1-bit input: Primary clock
+   );
+
+END Behavioral;

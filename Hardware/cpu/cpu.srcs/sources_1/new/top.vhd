@@ -30,22 +30,13 @@ ENTITY top IS
     address : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
     data_w : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
     data_r : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-    rw : OUT STD_LOGIC;
-    debug_led : OUT STD_LOGIC
+    rw : OUT STD_LOGIC
   );
 END top;
 
 ARCHITECTURE behavioral OF top IS
   SIGNAL tmp_clk : STD_LOGIC_VECTOR(20 DOWNTO 0);
 BEGIN
-
-  PROCESS (clk)
-  BEGIN
-    IF rising_edge(clk) THEN
-      debug_led <= data_r(0);
-    END IF;
-  END PROCESS;
-
   cpu_inst : ENTITY work.cpu
     GENERIC MAP(
       PC_INIT => x"0000"

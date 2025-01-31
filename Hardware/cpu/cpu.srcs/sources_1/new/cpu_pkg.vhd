@@ -117,6 +117,35 @@ PACKAGE cpu_pkg IS
     mux_status : mux_status_t;
   END RECORD MICRO_OPERATION;
 
+  CONSTANT initial_op : MICRO_OPERATION := (
+    wr_mem => '0',
+    alu_op => ADC,
+    status_val => '0',
+    pcl_en => '0',
+    pch_en => '0',
+    ma_en => '0',
+    abl_en => '0',
+    abh_en => '0',
+    ai_en => '0',
+    bi_en => '0',
+    acc_en => '0',
+    rgx_en => '0',
+    rgy_en => '0',
+    status_en => (OTHERS => '0'),
+    mux_db => s_DATA,
+    mux_sb => s_ALU,
+    mux_dout => s_DB,
+    mux_pc => S_INCR,
+    mux_ma => s_PC,
+    mux_addr => s_MA,
+    mux_adl => s_PC,
+    mux_adh => s_PC,
+    mux_ai => s_SB,
+    mux_bi => s_DB,
+    mux_acc => s_SB,
+    mux_status => s_ALU
+  );
+
   PROCEDURE reset(VARIABLE u_op : INOUT MICRO_OPERATION);
   PROCEDURE increment_pc(VARIABLE u_op : INOUT MICRO_OPERATION);
   PROCEDURE address_pc(VARIABLE u_op : INOUT MICRO_OPERATION);
@@ -128,32 +157,7 @@ END PACKAGE;
 PACKAGE BODY cpu_pkg IS
   PROCEDURE reset (VARIABLE u_op : INOUT MICRO_OPERATION) IS
   BEGIN
-    u_op.wr_mem := '0';
-    u_op.alu_op := ADC;
-    u_op.status_val := '0';
-    u_op.pcl_en := '0';
-    u_op.pch_en := '0';
-    u_op.ma_en := '0';
-    u_op.abl_en := '0';
-    u_op.abh_en := '0';
-    u_op.ai_en := '0';
-    u_op.bi_en := '0';
-    u_op.acc_en := '0';
-    u_op.rgx_en := '0';
-    u_op.rgy_en := '0';
-    u_op.status_en := (OTHERS => '0');
-    u_op.mux_db := s_DATA;
-    u_op.mux_sb := s_ALU;
-    u_op.mux_dout := s_DB;
-    u_op.mux_pc := S_INCR;
-    u_op.mux_ma := s_PC;
-    u_op.mux_addr := s_MA;
-    u_op.mux_adl := s_PC;
-    u_op.mux_adh := s_PC;
-    u_op.mux_ai := s_SB;
-    u_op.mux_bi := s_DB;
-    u_op.mux_acc := s_SB;
-    u_op.mux_status := s_ALU;
+    u_op := initial_op;
   END PROCEDURE;
 
   PROCEDURE increment_pc(VARIABLE u_op : INOUT MICRO_OPERATION) IS

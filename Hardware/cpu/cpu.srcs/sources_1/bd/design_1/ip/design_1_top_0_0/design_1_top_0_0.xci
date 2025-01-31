@@ -41,8 +41,7 @@
         "address": [ { "direction": "out", "size_left": "15", "size_right": "0" } ],
         "data_w": [ { "direction": "out", "size_left": "7", "size_right": "0" } ],
         "data_r": [ { "direction": "in", "size_left": "7", "size_right": "0" } ],
-        "rw": [ { "direction": "out" } ],
-        "debug_led": [ { "direction": "out" } ]
+        "rw": [ { "direction": "out" } ]
       },
       "interfaces": {
         "rst": {

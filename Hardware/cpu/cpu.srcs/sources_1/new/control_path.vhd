@@ -38,13 +38,18 @@ ARCHITECTURE behavioral OF control_path IS
 
   SIGNAL IR : STD_LOGIC_VECTOR(7 DOWNTO 0) := (OTHERS => '0');
 
-  SIGNAL decInstruction : DECODED_INSTRUCTION;
+  SIGNAL decInstruction : DECODED_INSTRUCTION := (
+    instruction_type => NOP,
+    instruction_group => NONE,
+    addressing_mode => IMPL,
+    instruction_length => 1
+  );
 
-  SIGNAL adc_u_op : MICRO_OPERATION;
-  SIGNAL ld_u_op : MICRO_OPERATION;
-  SIGNAL st_u_op : MICRO_OPERATION;
-  SIGNAL stat_u_op : MICRO_OPERATION;
-  SIGNAL jmp_u_op : MICRO_OPERATION;
+  SIGNAL adc_u_op : MICRO_OPERATION := initial_op;
+  SIGNAL ld_u_op : MICRO_OPERATION := initial_op;
+  SIGNAL st_u_op : MICRO_OPERATION := initial_op;
+  SIGNAL stat_u_op : MICRO_OPERATION := initial_op;
+  SIGNAL jmp_u_op : MICRO_OPERATION := initial_op;
 
 BEGIN
 
@@ -60,9 +65,11 @@ BEGIN
 
   PROCESS (state, instruction) BEGIN
     IF state = T1 THEN
-      decInstruction <= decode(instruction);
+      IR <= instruction;
     END IF;
   END PROCESS;
+
+  decInstruction <= decode(IR);
 
   STATE_MACHINE : PROCESS (ALL) BEGIN
     CASE STATE IS
@@ -198,7 +205,7 @@ BEGIN
   END PROCESS;
 
   CONTROL_SIGNALS : PROCESS (ALL)
-    VARIABLE u_op : MICRO_OPERATION;
+    VARIABLE u_op : MICRO_OPERATION := initial_op;
   BEGIN
     reset(u_op);
     IF state = T0 THEN
