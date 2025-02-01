@@ -31,7 +31,7 @@ USE work.cpu_pkg.ALL;
 
 ENTITY cpu IS
   GENERIC (
-    PC_INIT : STD_LOGIC_VECTOR(15 DOWNTO 0) := (OTHERS => '0')
+    PC_INIT : UNSIGNED(15 DOWNTO 0) := (OTHERS => '0')
   );
   PORT (
     clk : IN STD_LOGIC;
@@ -53,6 +53,10 @@ BEGIN
   n_clk <= NOT clk;
 
   data_path_inst : ENTITY work.data_path
+    GENERIC MAP(
+
+      PC_INIT => PC_INIT
+    )
     PORT MAP(
       clk => n_clk,
       rst => rst,

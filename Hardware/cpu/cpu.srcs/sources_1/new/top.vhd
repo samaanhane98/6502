@@ -45,7 +45,7 @@ BEGIN
 
   cpu_inst : ENTITY work.cpu
     GENERIC MAP(
-      PC_INIT => x"0000"
+      PC_INIT => x"00C8"
     )
     PORT MAP(
       clk => clk,

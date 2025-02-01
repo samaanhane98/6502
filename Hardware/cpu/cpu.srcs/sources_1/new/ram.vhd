@@ -34,8 +34,7 @@ ENTITY ram IS
 END ram;
 
 ARCHITECTURE Behavioral OF ram IS
-  -- SIGNAL memory : MEMORY(0 TO 63) := (0 => x"69", 1 => x"01", 2 => x"8D", 3 => x"10", 4 => x"00", 5 => x"4C", 6 => x"00", 7 => x"00", 16 => x"00", OTHERS => (OTHERS => '0'));
-  SIGNAL memory : MEMORY(0 TO 63) := (0 => x"69", 1 => x"01", 2 => x"4C", 3 => x"00", 4 => x"00", OTHERS => (OTHERS => '0'));
+  SIGNAL memory : MEMORY(0 TO 511) := (0 => x"02", 200 => x"38", 201 => x"69", 202 => x"01", 203 => x"4C", 204 => x"C8", 205 => x"00", OTHERS => (OTHERS => '0'));
 
 BEGIN
 
