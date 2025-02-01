@@ -79,143 +79,58 @@ BEGIN
         next_state <= T2;
       WHEN T2 =>
         next_state <= T3;
+      WHEN T3 =>
+        IF decInstruction.instruction_type = ADC THEN
+          IF decInstruction.addressing_mode = IMM THEN
+            next_state <= T0;
+          ELSE
+            next_state <= T4;
+          END IF;
+        ELSIF decInstruction.instruction_type = JMP THEN
+          next_state <= T0;
+        ELSE
+          next_state <= T4;
+        END IF;
 
+      WHEN T4 =>
+        IF decInstruction.instruction_type = ADC THEN
+          IF decInstruction.addressing_mode = ZERO_PAGE THEN
+            next_state <= T0;
+          ELSE
+            next_state <= T5;
+          END IF;
+        ELSE
+          next_state <= T5;
+        END IF;
+
+      WHEN T5 =>
+        IF decInstruction.instruction_type = ADC THEN
+          IF decInstruction.addressing_mode = ZERO_PAGE_X OR decInstruction.addressing_mode = ABSOLUTE THEN
+            next_state <= T0;
+          ELSE
+            next_state <= T6;
+          END IF;
+        ELSE
+          next_state <= T6;
+        END IF;
+
+      WHEN T6 =>
+        IF decInstruction.instruction_type = ADC THEN
+          IF decInstruction.addressing_mode = ABSOLUTE_X OR decInstruction.addressing_mode = ABSOLUTE_Y THEN
+            next_state <= T0;
+          ELSE
+            next_state <= T7;
+          END IF;
+        ELSE
+          next_state <= T7;
+        END IF;
+
+      WHEN T7 =>
+        next_state <= T0;
       WHEN OTHERS =>
         next_state <= T0;
     END CASE;
   END PROCESS;
-  -- STATE_MACHINE : PROCESS (ALL) BEGIN
-  --   CASE STATE IS
-  --     WHEN T0 =>
-  --       next_state <= T1;
-  --     WHEN T1 =>
-  --       IF decInstruction.instruction_group = SET_STATUS OR decInstruction.instruction_group = CLEAR_STATUS OR decInstruction.instruction_type = NOP THEN
-  --         next_state <= T0;
-  --       ELSE
-  --         next_state <= T2;
-  --       END IF;
-
-  --     WHEN T2 =>
-  --       IF decInstruction.instruction_type = ADC THEN
-  --         next_state <= T3;
-  --       ELSIF decInstruction.instruction_type = JMP THEN
-  --         next_state <= T3;
-  --       ELSIF decInstruction.instruction_group = SET_REG THEN
-  --         CASE (decInstruction.addressing_mode) IS
-  --           WHEN IMM =>
-  --             next_state <= T0;
-  --           WHEN OTHERS =>
-  --             next_state <= T3;
-  --         END CASE;
-  --       ELSIF decInstruction.instruction_group = STORE_REG THEN
-  --         CASE (decInstruction.addressing_mode) IS
-  --           WHEN ABSOLUTE =>
-  --             next_state <= T3;
-  --           WHEN OTHERS =>
-  --             next_state <= T0;
-  --         END CASE;
-  --       ELSE
-  --         next_state <= T0;
-  --       END IF;
-
-  --     WHEN T3 =>
-  --       IF decInstruction.instruction_type = ADC THEN
-  --         CASE (decInstruction.addressing_mode) IS
-  --           WHEN IMM =>
-  --             next_state <= T0;
-  --           WHEN OTHERS =>
-  --             next_state <= T4;
-  --         END CASE;
-  --       ELSIF decInstruction.instruction_type = JMP THEN
-  --         CASE (decInstruction.addressing_mode) IS
-  --           WHEN ABSOLUTE =>
-  --             next_state <= T0;
-  --           WHEN OTHERS =>
-  --         END CASE;
-
-  --       ELSIF decInstruction.instruction_group = SET_REG THEN
-  --         CASE (decInstruction.addressing_mode) IS
-  --           WHEN ZERO_PAGE =>
-  --             next_state <= T0;
-  --           WHEN OTHERS =>
-  --             next_state <= T4;
-  --         END CASE;
-  --       ELSIF decInstruction.instruction_group = STORE_REG THEN
-  --         CASE (decInstruction.addressing_mode) IS
-  --           WHEN ABSOLUTE =>
-  --             next_state <= T4;
-  --           WHEN OTHERS =>
-  --             next_state <= T0;
-  --         END CASE;
-  --       END IF;
-
-  --     WHEN T4 =>
-  --       IF decInstruction.instruction_type = ADC THEN
-  --         CASE (decInstruction.addressing_mode) IS
-  --           WHEN ZERO_PAGE =>
-  --             next_state <= T0;
-  --           WHEN OTHERS =>
-  --             next_state <= T5;
-  --         END CASE;
-  --       ELSIF decInstruction.instruction_group = SET_REG THEN
-  --         CASE (decInstruction.addressing_mode) IS
-  --           WHEN ZERO_PAGE_X | ZERO_PAGE_Y | ABSOLUTE =>
-  --             next_state <= T0;
-  --           WHEN OTHERS =>
-  --             next_state <= T5;
-  --         END CASE;
-
-  --       ELSIF decInstruction.instruction_group = STORE_REG THEN
-  --         CASE (decInstruction.addressing_mode) IS
-  --           WHEN OTHERS =>
-  --             next_state <= T0;
-  --         END CASE;
-
-  --       END IF;
-
-  --     WHEN T5 =>
-  --       IF decInstruction.instruction_type = ADC THEN
-  --         CASE (decInstruction.addressing_mode) IS
-  --           WHEN ABSOLUTE_X | ABSOLUTE_Y | INDEXED_INDIRECT | INDIRECT_INDEXED =>
-  --             next_state <= T6;
-  --           WHEN OTHERS =>
-  --             next_state <= T0;
-  --         END CASE;
-  --       ELSIF decInstruction.instruction_group = SET_REG THEN
-  --         CASE (decInstruction.addressing_mode) IS
-  --           WHEN INDEXED_INDIRECT | INDIRECT_INDEXED =>
-  --             next_state <= T6;
-  --           WHEN OTHERS =>
-  --             next_state <= T0;
-  --         END CASE;
-
-  --       END IF;
-
-  --     WHEN T6 =>
-  --       IF decInstruction.instruction_type = ADC THEN
-  --         CASE (decInstruction.addressing_mode) IS
-  --           WHEN ABSOLUTE_X | ABSOLUTE_Y =>
-  --             next_state <= T0;
-
-  --           WHEN OTHERS =>
-  --             next_state <= T7;
-  --         END CASE;
-  --       ELSIF decInstruction.instruction_group = SET_REG THEN
-  --         next_state <= T0;
-  --       END IF;
-
-  --     WHEN T7 =>
-  --       IF decInstruction.instruction_type = ADC THEN
-  --         CASE (decInstruction.addressing_mode) IS
-  --           WHEN INDEXED_INDIRECT | INDIRECT_INDEXED =>
-  --             next_state <= T0;
-
-  --           WHEN OTHERS =>
-  --         END CASE;
-  --       END IF;
-  --     WHEN OTHERS =>
-  --   END CASE;
-  -- END PROCESS;
 
   CONTROL_SIGNALS : PROCESS (ALL)
     VARIABLE u_op : MICRO_OPERATION := initial_op;
