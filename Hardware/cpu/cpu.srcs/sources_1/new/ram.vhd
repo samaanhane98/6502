@@ -35,7 +35,7 @@ END ram;
 
 ARCHITECTURE Behavioral OF ram IS
   -- SIGNAL memory : MEMORY(0 TO 511) := (0 => x"02", 200 => x"38", 201 => x"69", 202 => x"01", 203 => x"4C", 204 => x"C8", 205 => x"00", OTHERS => (OTHERS => '0'));
-  SIGNAL memory : MEMORY(0 TO 511) := (0 => x"02", 200 => x"AD", 201 => x"00", OTHERS => (OTHERS => '0'));
+  SIGNAL memory : MEMORY(0 TO 511) := (0 => x"02", 200 => x"F0", 201 => x"10", OTHERS => (OTHERS => '0'));
 
 BEGIN
 

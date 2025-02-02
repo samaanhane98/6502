@@ -47,10 +47,10 @@ PACKAGE cpu_pkg IS
   TYPE CPU_STATE IS (T0, T1, T2, T3, T4, T5, T6, T7);
 
   -- Instruction types
-  TYPE ADDRESSING_MODE IS (IMPL, IMM, ZERO_PAGE, ZERO_PAGE_X, ZERO_PAGE_Y, ABSOLUTE, ABSOLUTE_X, ABSOLUTE_Y, INDEXED_INDIRECT, INDIRECT_INDEXED);
-  TYPE INSTRUCTION_GROUP IS (NONE, LOAD_REG, STORE_REG, SET_STATUS, CLEAR_STATUS);
+  TYPE ADDRESSING_MODE IS (IMPL, IMM, RELATIVE, ZERO_PAGE, ZERO_PAGE_X, ZERO_PAGE_Y, ABSOLUTE, ABSOLUTE_X, ABSOLUTE_Y, INDEXED_INDIRECT, INDIRECT_INDEXED);
+  TYPE INSTRUCTION_GROUP IS (NONE, LOAD_REG, STORE_REG, SET_STATUS, CLEAR_STATUS, BRANCH);
   TYPE INSTRUCTION_TYPE IS (
-    NOP, ADC, LDA, LDX, LDY, SC, CLC, CLV, JMP, STA
+    NOP, ADC, LDA, LDX, LDY, SC, CLC, CLV, JMP, STA, BEQ
   );
 
   SUBTYPE INSTRUCTION IS STD_LOGIC_VECTOR(7 DOWNTO 0);
@@ -72,7 +72,7 @@ PACKAGE cpu_pkg IS
   TYPE ALU_OPERATION IS (ADC, AD, AD_INC);
 
   TYPE mux_db_t IS (s_DATA, s_ACC, s_PCL, s_PCH, s_SB);
-  TYPE mux_sb_t IS (s_RGX, s_RGY, s_ACC, s_ALU, s_ADH, s_DATA);
+  TYPE mux_sb_t IS (s_RGX, s_RGY, s_ACC, s_ALU, s_ADH, s_PCL, s_DATA);
   TYPE mux_dout_t IS (s_DB);
 
   TYPE mux_pc_t IS (s_INCR, s_JMP);
@@ -384,6 +384,12 @@ PACKAGE BODY cpu_pkg IS
         o_instr.addressing_mode := ABSOLUTE;
         o_instr.instruction_length := 3;
 
+      WHEN x"F0" =>
+        o_instr.instruction_type := BEQ;
+        o_instr.instruction_group := BRANCH;
+        o_instr.addressing_mode := RELATIVE;
+        o_instr.instruction_length := 2;
+
       WHEN OTHERS =>
         o_instr.instruction_type := NOP;
         o_instr.instruction_group := NONE;
@@ -399,6 +405,7 @@ PACKAGE BODY cpu_pkg IS
     CASE am IS
       WHEN IMM => RETURN "Immediate";
       WHEN IMPL => RETURN "Implied";
+      WHEN RELATIVE => RETURN "Relative";
       WHEN ZERO_PAGE => RETURN "Zero Page";
       WHEN ZERO_PAGE_X => RETURN "Zero Page X";
       WHEN ZERO_PAGE_Y => RETURN "Zero Page Y";
@@ -423,6 +430,7 @@ PACKAGE BODY cpu_pkg IS
       WHEN CLC => RETURN "Cear Carry Flag";
       WHEN CLV => RETURN "Cear Overflow Flag";
       WHEN JMP => RETURN "Jump";
+      WHEN BEQ => RETURN "Branch [ZERO]";
       WHEN NOP => RETURN "No Operation";
       WHEN OTHERS => RETURN "UNKNOWN";
     END CASE;

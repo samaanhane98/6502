@@ -50,6 +50,7 @@ ARCHITECTURE behavioral OF control_path IS
   SIGNAL st_u_op : MICRO_OPERATION := initial_op;
   SIGNAL stat_u_op : MICRO_OPERATION := initial_op;
   SIGNAL jmp_u_op : MICRO_OPERATION := initial_op;
+  SIGNAL branch_u_op : MICRO_OPERATION := initial_op;
 
 BEGIN
   PROCESS (clk, rst) BEGIN
@@ -105,6 +106,8 @@ BEGIN
         ELSIF decInstruction.instruction_group = LOAD_REG AND (decInstruction.addressing_mode = ZERO_PAGE_X OR decInstruction.addressing_mode = ABSOLUTE) THEN
           next_state <= T0;
         ELSIF decInstruction.instruction_type = STA THEN
+          next_state <= T0;
+        ELSIF decInstruction.instruction_group = BRANCH THEN
           next_state <= T0;
         ELSE
           next_state <= T5;
@@ -165,6 +168,8 @@ BEGIN
           u_operation <= st_u_op;
         WHEN JMP =>
           u_operation <= jmp_u_op;
+        WHEN BEQ =>
+          u_operation <= branch_u_op;
 
         WHEN OTHERS =>
           u_operation <= initial_op;
@@ -831,44 +836,85 @@ BEGIN
     VARIABLE u_op : MICRO_OPERATION;
   BEGIN
     reset(u_op);
-    IF decInstruction.instruction_type = JMP THEN
-      CASE state IS
-        WHEN T2 =>
-          CASE (decInstruction.addressing_mode) IS
-            WHEN ABSOLUTE =>
-              ------- Addressing ------- 
-              address_pc(u_op);
-              -------------------------- 
+    CASE state IS
+      WHEN T2 =>
+        CASE (decInstruction.addressing_mode) IS
+          WHEN ABSOLUTE =>
+            ------- Addressing ------- 
+            address_pc(u_op);
+            -------------------------- 
 
-              increment_pc(u_op);
+            increment_pc(u_op);
 
-              u_op.alu_op := AD;
-              u_op.mux_ai := s_ZERO;
-              u_op.ai_en := '1';
+            u_op.alu_op := AD;
+            u_op.mux_ai := s_ZERO;
+            u_op.ai_en := '1';
 
-              u_op.mux_db := s_DATA;
-              u_op.mux_bi := s_DB;
-              u_op.bi_en := '1';
+            u_op.mux_db := s_DATA;
+            u_op.mux_bi := s_DB;
+            u_op.bi_en := '1';
 
-            WHEN OTHERS =>
-              u_op := initial_op;
-          END CASE;
-        WHEN T3 =>
-          CASE (decInstruction.addressing_mode) IS
-            WHEN ABSOLUTE =>
-              u_op.mux_pc := s_JMP;
-              u_op.mux_db := s_DATA;
-              u_op.mux_sb := s_ALU;
-              u_op.pcl_en := '1';
-              u_op.pch_en := '1';
+          WHEN OTHERS =>
+            u_op := initial_op;
+        END CASE;
+      WHEN T3 =>
+        CASE (decInstruction.addressing_mode) IS
+          WHEN ABSOLUTE =>
+            u_op.mux_pc := s_JMP;
+            u_op.mux_db := s_DATA;
+            u_op.mux_sb := s_ALU;
+            u_op.pcl_en := '1';
+            u_op.pch_en := '1';
 
-            WHEN OTHERS =>
-              u_op := initial_op;
-          END CASE;
-        WHEN OTHERS =>
-          u_op := initial_op;
-      END CASE;
-    END IF;
+          WHEN OTHERS =>
+            u_op := initial_op;
+        END CASE;
+      WHEN OTHERS =>
+        u_op := initial_op;
+    END CASE;
     jmp_u_op <= u_op;
+  END PROCESS;
+
+  BRACNH_instr : PROCESS (ALL)
+    VARIABLE u_op : MICRO_OPERATION := initial_op;
+  BEGIN
+    reset(u_op);
+    CASE state IS
+      WHEN T2 =>
+        u_op.mux_sb := s_PCL;
+        u_op.mux_ai := s_SB;
+        u_op.ai_en := '1';
+
+        u_op.mux_db := s_DATA;
+        u_op.mux_bi := s_DB;
+        u_op.bi_en := '1';
+      WHEN T3 =>
+        u_op.alu_op := AD;
+        u_op.mux_sb := s_ALU;
+
+        u_op.mux_pc := s_JMP;
+        u_op.pcl_en := '1';
+
+        u_op.mux_ai := s_ZERO;
+        u_op.ai_en := '1';
+
+        u_op.mux_db := s_PCH;
+        u_op.mux_bi := s_DB;
+        u_op.bi_en := '1';
+
+        -- TODO: check if this should be added in other places
+        u_op.mux_status := s_ALU;
+        u_op.status_en(CARRY) := '1';
+      WHEN T4 =>
+        u_op.alu_op := ADC;
+        u_op.mux_sb := s_ALU;
+        u_op.mux_db := s_SB;
+        u_op.mux_pc := s_JMP;
+        u_op.pch_en := '1';
+
+      WHEN OTHERS =>
+        u_op := initial_op;
+    END CASE;
+    branch_u_op <= u_op;
   END PROCESS;
 END behavioral;

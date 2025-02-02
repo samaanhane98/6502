@@ -68,6 +68,7 @@ BEGIN
   DATA_OUT_MUX : data_out <= DB WHEN u_operation.mux_dout = s_DB;
 
   -- Buses
+  -- TODO: Add zero selection here for branching
   MUX_DB : DB <= data_in WHEN u_operation.mux_db = s_DATA ELSE
   ACC_q WHEN u_operation.mux_db = s_ACC ELSE
   PCL_q WHEN u_operation.mux_db = s_PCL ELSE
@@ -80,6 +81,7 @@ BEGIN
   RGY_q WHEN u_operation.mux_sb = s_RGY ELSE
   ACC_q WHEN u_operation.mux_sb = s_ACC ELSE
   ADH WHEN u_operation.mux_sb = s_ADH ELSE
+  PCL_q WHEN u_operation.mux_sb = s_PCL ELSE
   data_in WHEN u_operation.mux_sb = s_DATA ELSE
   (OTHERS => '0');
 
@@ -260,10 +262,7 @@ BEGIN
   '0';
   status_d(ZERO) <= status_alu(ZERO) WHEN u_operation.mux_status = s_ALU ELSE
   status_data_in(ZERO);
-  -- status_d(INTERRUPT) <= '0';
-  -- status_d(DECIMAL) <= '0';
-  -- status_d(BREAKF) <= '0';
-  -- status_d(UNUSED) <= '1';
+
   status_d(OVERFLOW) <= status_alu(OVERFLOW) WHEN u_operation.mux_status = s_ALU ELSE
   u_operation.status_val WHEN u_operation.mux_status = s_IMPL ELSE
   '0';
