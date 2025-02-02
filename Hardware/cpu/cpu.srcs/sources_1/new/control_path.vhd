@@ -82,28 +82,28 @@ BEGIN
           next_state <= T2;
         END IF;
       WHEN T2 =>
-        next_state <= T3;
+        IF decInstruction.instruction_group = LOAD_REG AND decInstruction.addressing_mode = IMM THEN
+          next_state <= T0;
+        ELSE
+          next_state <= T3;
+        END IF;
       WHEN T3 =>
-        IF decInstruction.instruction_type = ADC THEN
-          IF decInstruction.addressing_mode = IMM THEN
-            next_state <= T0;
-          ELSE
-            next_state <= T4;
-          END IF;
+        IF decInstruction.instruction_type = ADC AND decInstruction.addressing_mode = IMM THEN
+          next_state <= T0;
         ELSIF decInstruction.instruction_type = JMP THEN
+          next_state <= T0;
+        ELSIF decInstruction.instruction_group = LOAD_REG AND decInstruction.addressing_mode = ZERO_PAGE THEN
           next_state <= T0;
         ELSE
           next_state <= T4;
         END IF;
 
       WHEN T4 =>
-        IF decInstruction.instruction_type = ADC THEN
-          IF decInstruction.addressing_mode = ZERO_PAGE THEN
-            next_state <= T0;
-          ELSE
-            next_state <= T5;
-          END IF;
+        IF decInstruction.instruction_type = ADC AND decInstruction.addressing_mode = ZERO_PAGE THEN
+          next_state <= T0;
 
+        ELSIF decInstruction.instruction_group = LOAD_REG AND (decInstruction.addressing_mode = ZERO_PAGE_X OR decInstruction.addressing_mode = ABSOLUTE) THEN
+          next_state <= T0;
         ELSIF decInstruction.instruction_type = STA THEN
           next_state <= T0;
         ELSE
@@ -111,23 +111,17 @@ BEGIN
         END IF;
 
       WHEN T5 =>
-        IF decInstruction.instruction_type = ADC THEN
-          IF decInstruction.addressing_mode = ZERO_PAGE_X OR decInstruction.addressing_mode = ABSOLUTE THEN
-            next_state <= T0;
-          ELSE
-            next_state <= T6;
-          END IF;
+        IF decInstruction.instruction_type = ADC AND (decInstruction.addressing_mode = ZERO_PAGE_X OR decInstruction.addressing_mode = ABSOLUTE) THEN
+          next_state <= T0;
         ELSE
           next_state <= T6;
         END IF;
 
       WHEN T6 =>
-        IF decInstruction.instruction_type = ADC THEN
-          IF decInstruction.addressing_mode = ABSOLUTE_X OR decInstruction.addressing_mode = ABSOLUTE_Y THEN
-            next_state <= T0;
-          ELSE
-            next_state <= T7;
-          END IF;
+        IF decInstruction.instruction_type = ADC AND (decInstruction.addressing_mode = ABSOLUTE_X OR decInstruction.addressing_mode = ABSOLUTE_Y) THEN
+          next_state <= T0;
+        ELSIF decInstruction.instruction_group = LOAD_REG AND (decInstruction.addressing_mode = INDEXED_INDIRECT OR decInstruction.addressing_mode = INDIRECT_INDEXED) THEN
+          next_state <= T0;
         ELSE
           next_state <= T7;
         END IF;
@@ -491,271 +485,275 @@ BEGIN
     END CASE;
     adc_u_op <= u_op;
   END PROCESS;
+
   -- -- ! LDA, LDX, LDY
-  -- LD_instr : PROCESS (ALL)
-  --   VARIABLE u_op : MICRO_OPERATION;
-  -- BEGIN
-  --   reset(u_op);
-  --   IF decInstruction.instruction_group = SET_REG THEN
-  --     CASE state IS
-  --       WHEN T2 =>
-  --         CASE (decInstruction.addressing_mode) IS
-  --           WHEN IMM =>
-  --             store_in_reg(u_op, decInstruction);
+  LD_instr : PROCESS (ALL)
+    VARIABLE u_op : MICRO_OPERATION;
+  BEGIN
+    reset(u_op);
+    CASE state IS
+      WHEN T2 =>
+        CASE (decInstruction.addressing_mode) IS
+          WHEN IMM =>
+            store_in_reg(u_op, decInstruction);
 
-  --             u_op.mux_status := s_DATA;
-  --             u_op.status_en(ZERO) := '1';
-  --             u_op.status_en(NEGATIVE) := '1';
+            u_op.mux_status := s_DATA;
+            u_op.status_en(ZERO) := '1';
+            u_op.status_en(NEGATIVE) := '1';
 
-  --           WHEN ZERO_PAGE =>
-  --             ------- Addressing ------- 
-  --             u_op.mux_addr := s_MA;
-  --             -------------------------- 
+          WHEN ZERO_PAGE =>
+            ------- Addressing ------- 
+            u_op.mux_addr := s_MA;
+            -------------------------- 
 
-  --             u_op.mux_ma := s_DATA;
-  --             u_op.ma_en := '1';
+            u_op.mux_ma := s_DATA;
+            u_op.ma_en := '1';
 
-  --           WHEN ZERO_PAGE_X | ZERO_PAGE_Y =>
-  --             u_op.mux_sb := s_RGX WHEN decInstruction.addressing_mode = ZERO_PAGE_X ELSE
-  --             s_RGY;
-  --             u_op.mux_ai := s_SB;
-  --             u_op.ai_en := '1';
+          WHEN ZERO_PAGE_X | ZERO_PAGE_Y =>
+            u_op.mux_sb := s_RGX WHEN decInstruction.addressing_mode = ZERO_PAGE_X ELSE
+            s_RGY;
+            u_op.mux_ai := s_SB;
+            u_op.ai_en := '1';
 
-  --             u_op.mux_db := s_DATA;
-  --             u_op.mux_bi := s_DB;
-  --             u_op.bi_en := '1';
+            u_op.mux_db := s_DATA;
+            u_op.mux_bi := s_DB;
+            u_op.bi_en := '1';
 
-  --           WHEN ABSOLUTE =>
-  --             ------- Addressing ------- 
-  --             address_pc(u_op);
-  --             -------------------------- 
+          WHEN ABSOLUTE =>
+            ------- Addressing ------- 
+            address_pc(u_op);
+            -------------------------- 
 
-  --             increment_pc(u_op);
+            increment_pc(u_op);
 
-  --             u_op.mux_adl := s_DATA;
-  --             u_op.abl_en := '1';
+            u_op.mux_adl := s_DATA;
+            u_op.abl_en := '1';
 
-  --           WHEN ABSOLUTE_X | ABSOLUTE_Y =>
-  --             ------- Addressing ------- 
-  --             u_op.mux_addr := s_MA;
-  --             -------------------------- 
+          WHEN ABSOLUTE_X | ABSOLUTE_Y =>
+            ------- Addressing ------- 
+            u_op.mux_addr := s_MA;
+            -------------------------- 
 
-  --             increment_pc(u_op);
-  --             u_op.mux_ma := s_PC;
-  --             u_op.ma_en := '1';
+            increment_pc(u_op);
+            u_op.mux_ma := s_PC;
+            u_op.ma_en := '1';
 
-  --             u_op.mux_sb := s_RGX WHEN decInstruction.addressing_mode = ABSOLUTE_X ELSE
-  --             s_RGY;
-  --             u_op.mux_ai := s_SB;
-  --             u_op.ai_en := '1';
+            u_op.mux_sb := s_RGX WHEN decInstruction.addressing_mode = ABSOLUTE_X ELSE
+            s_RGY;
+            u_op.mux_ai := s_SB;
+            u_op.ai_en := '1';
 
-  --             u_op.mux_db := s_DATA;
-  --             u_op.mux_bi := s_DB;
-  --             u_op.bi_en := '1';
+            u_op.mux_db := s_DATA;
+            u_op.mux_bi := s_DB;
+            u_op.bi_en := '1';
 
-  --           WHEN INDEXED_INDIRECT =>
-  --             u_op.mux_sb := s_RGX;
-  --             u_op.mux_ai := s_SB;
-  --             u_op.ai_en := '1';
+          WHEN INDEXED_INDIRECT =>
+            u_op.mux_sb := s_RGX;
+            u_op.mux_ai := s_SB;
+            u_op.ai_en := '1';
 
-  --             u_op.mux_db := s_DATA;
-  --             u_op.mux_bi := s_DB;
-  --             u_op.bi_en := '1';
+            u_op.mux_db := s_DATA;
+            u_op.mux_bi := s_DB;
+            u_op.bi_en := '1';
 
-  --           WHEN INDIRECT_INDEXED =>
-  --             ------- Addressing ------- 
-  --             u_op.mux_addr := s_MA;
-  --             -------------------------- 
+          WHEN INDIRECT_INDEXED =>
+            ------- Addressing ------- 
+            u_op.mux_addr := s_MA;
+            -------------------------- 
 
-  --             u_op.mux_ma := s_DATA;
-  --             u_op.ma_en := '1';
+            u_op.mux_ma := s_DATA;
+            u_op.ma_en := '1';
 
-  --             u_op.mux_ai := s_ZERO;
-  --             u_op.ai_en := '1';
+            u_op.mux_ai := s_ZERO;
+            u_op.ai_en := '1';
 
-  --             u_op.mux_db := s_DATA;
-  --             u_op.mux_bi := s_DB;
-  --             u_op.bi_en := '1';
+            u_op.mux_db := s_DATA;
+            u_op.mux_bi := s_DB;
+            u_op.bi_en := '1';
 
-  --           WHEN OTHERS =>
-  --         END CASE;
-  --       WHEN T3 =>
+          WHEN OTHERS =>
+            u_op := initial_op;
+        END CASE;
+      WHEN T3 =>
 
-  --         CASE (decInstruction.addressing_mode) IS
-  --           WHEN ZERO_PAGE =>
-  --             store_in_reg(u_op, decInstruction);
+        CASE (decInstruction.addressing_mode) IS
+          WHEN ZERO_PAGE =>
+            store_in_reg(u_op, decInstruction);
 
-  --             u_op.mux_status := s_DATA;
-  --             u_op.status_en(ZERO) := '1';
-  --             u_op.status_en(NEGATIVE) := '1';
-  --           WHEN ZERO_PAGE_X | ZERO_PAGE_Y =>
-  --             ------- Addressing ------- 
-  --             u_op.mux_addr := s_AB;
-  --             -------------------------- 
+            u_op.mux_status := s_DATA;
+            u_op.status_en(ZERO) := '1';
+            u_op.status_en(NEGATIVE) := '1';
+          WHEN ZERO_PAGE_X | ZERO_PAGE_Y =>
+            ------- Addressing ------- 
+            u_op.mux_addr := s_AB;
+            -------------------------- 
 
-  --             u_op.alu_op := AD;
-  --             u_op.mux_adl := s_ALU;
-  --             u_op.abl_en := '1';
+            u_op.alu_op := AD;
+            u_op.mux_adl := s_ALU;
+            u_op.abl_en := '1';
 
-  --           WHEN ABSOLUTE =>
-  --             ------- Addressing ------- 
-  --             u_op.mux_addr := s_AB;
-  --             -------------------------- 
-  --             u_op.mux_adh := s_DATA;
-  --             u_op.abh_en := '1';
+          WHEN ABSOLUTE =>
+            ------- Addressing ------- 
+            u_op.mux_addr := s_AB;
+            -------------------------- 
+            u_op.mux_adh := s_DATA;
+            u_op.abh_en := '1';
 
-  --           WHEN ABSOLUTE_X | ABSOLUTE_Y =>
-  --             ------- Addressing ------- 
-  --             u_op.mux_addr := s_MA;
-  --             -------------------------- 
+          WHEN ABSOLUTE_X | ABSOLUTE_Y =>
+            ------- Addressing ------- 
+            u_op.mux_addr := s_MA;
+            -------------------------- 
 
-  --             increment_pc(u_op);
-  --             u_op.mux_ma := s_PC;
-  --             u_op.ma_en := '1';
+            increment_pc(u_op);
+            u_op.mux_ma := s_PC;
+            u_op.ma_en := '1';
 
-  --             u_op.mux_ai := s_ZERO;
-  --             u_op.ai_en := '1';
-  --             u_op.mux_bi := s_DB;
-  --             u_op.bi_en := '1';
+            u_op.mux_ai := s_ZERO;
+            u_op.ai_en := '1';
+            u_op.mux_bi := s_DB;
+            u_op.bi_en := '1';
 
-  --             u_op.alu_op := AD;
-  --             u_op.mux_adl := s_ALU;
-  --             u_op.abl_en := '1';
+            u_op.alu_op := AD;
+            u_op.mux_adl := s_ALU;
+            u_op.abl_en := '1';
 
-  --           WHEN INDEXED_INDIRECT =>
-  --             ------- Addressing ------- 
-  --             u_op.mux_addr := s_AB;
-  --             -------------------------- 
+          WHEN INDEXED_INDIRECT =>
+            ------- Addressing ------- 
+            u_op.mux_addr := s_AB;
+            -------------------------- 
 
-  --             u_op.alu_op := AD;
-  --             u_op.mux_adl := s_ALU;
-  --             u_op.abl_en := '1';
-  --             u_op.mux_adh := s_ZERO;
-  --             u_op.abh_en := '1';
+            u_op.alu_op := AD;
+            u_op.mux_adl := s_ALU;
+            u_op.abl_en := '1';
+            u_op.mux_adh := s_ZERO;
+            u_op.abh_en := '1';
 
-  --           WHEN INDIRECT_INDEXED =>
-  --             ------- Addressing ------- 
-  --             u_op.mux_addr := s_MA;
-  --             -------------------------- 
+          WHEN INDIRECT_INDEXED =>
+            ------- Addressing ------- 
+            u_op.mux_addr := s_MA;
+            -------------------------- 
 
-  --             u_op.alu_op := AD_INC;
-  --             u_op.mux_ma := s_ALU;
-  --             u_op.ma_en := '1';
+            u_op.alu_op := AD_INC;
+            u_op.mux_ma := s_ALU;
+            u_op.ma_en := '1';
 
-  --             u_op.mux_sb := s_RGY;
-  --             u_op.mux_ai := s_SB;
-  --             u_op.ai_en := '1';
+            u_op.mux_sb := s_RGY;
+            u_op.mux_ai := s_SB;
+            u_op.ai_en := '1';
 
-  --             u_op.mux_db := s_DATA;
-  --             u_op.mux_bi := s_DB;
-  --             u_op.bi_en := '1';
+            u_op.mux_db := s_DATA;
+            u_op.mux_bi := s_DB;
+            u_op.bi_en := '1';
 
-  --           WHEN OTHERS =>
-  --         END CASE;
-  --       WHEN T4 =>
-  --         CASE (decInstruction.addressing_mode) IS
-  --           WHEN ZERO_PAGE_X =>
-  --             store_in_reg(u_op, decInstruction);
+          WHEN OTHERS =>
+            u_op := initial_op;
+        END CASE;
+      WHEN T4 =>
+        CASE (decInstruction.addressing_mode) IS
+          WHEN ZERO_PAGE_X =>
+            store_in_reg(u_op, decInstruction);
 
-  --             u_op.mux_status := s_DATA;
-  --             u_op.status_en(ZERO) := '1';
-  --             u_op.status_en(NEGATIVE) := '1';
+            u_op.mux_status := s_DATA;
+            u_op.status_en(ZERO) := '1';
+            u_op.status_en(NEGATIVE) := '1';
 
-  --           WHEN ABSOLUTE =>
-  --             store_in_reg(u_op, decInstruction);
+          WHEN ABSOLUTE =>
+            store_in_reg(u_op, decInstruction);
 
-  --             u_op.mux_status := s_DATA;
-  --             u_op.status_en(ZERO) := '1';
-  --             u_op.status_en(NEGATIVE) := '1';
+            u_op.mux_status := s_DATA;
+            u_op.status_en(ZERO) := '1';
+            u_op.status_en(NEGATIVE) := '1';
 
-  --           WHEN ABSOLUTE_X | ABSOLUTE_Y =>
-  --             ------- Addressing ------- 
-  --             u_op.mux_addr := s_AB;
-  --             -------------------------- 
+          WHEN ABSOLUTE_X | ABSOLUTE_Y =>
+            ------- Addressing ------- 
+            u_op.mux_addr := s_AB;
+            -------------------------- 
 
-  --             u_op.alu_op := ADC;
-  --             u_op.mux_adh := s_ALU;
-  --             u_op.abh_en := '1';
+            u_op.alu_op := ADC;
+            u_op.mux_adh := s_ALU;
+            u_op.abh_en := '1';
 
-  --           WHEN INDEXED_INDIRECT =>
-  --             ------- Addressing ------- 
-  --             u_op.mux_addr := s_AB;
-  --             -------------------------- 
-  --             u_op.mux_adl := s_ALU;
-  --             u_op.abl_en := '1';
-  --             u_op.mux_adh := s_ZERO;
-  --             u_op.abh_en := '1';
+          WHEN INDEXED_INDIRECT =>
+            ------- Addressing ------- 
+            u_op.mux_addr := s_AB;
+            -------------------------- 
+            u_op.mux_adl := s_ALU;
+            u_op.abl_en := '1';
+            u_op.mux_adh := s_ZERO;
+            u_op.abh_en := '1';
 
-  --             u_op.alu_op := AD_INC;
-  --             u_op.mux_ai := s_ZERO;
-  --             u_op.ai_en := '1';
+            u_op.alu_op := AD_INC;
+            u_op.mux_ai := s_ZERO;
+            u_op.ai_en := '1';
 
-  --             u_op.mux_db := s_DATA;
-  --             u_op.mux_bi := s_DB;
-  --             u_op.bi_en := '1';
+            u_op.mux_db := s_DATA;
+            u_op.mux_bi := s_DB;
+            u_op.bi_en := '1';
 
-  --           WHEN INDIRECT_INDEXED =>
-  --             ------- Addressing ------- 
-  --             u_op.mux_addr := s_AB;
-  --             -------------------------- 
-  --             u_op.mux_adl := s_ALU;
-  --             u_op.abl_en := '1';
-  --             u_op.mux_adh := s_ZERO;
-  --             u_op.abh_en := '1';
+          WHEN INDIRECT_INDEXED =>
+            ------- Addressing ------- 
+            u_op.mux_addr := s_AB;
+            -------------------------- 
+            u_op.mux_adl := s_ALU;
+            u_op.abl_en := '1';
+            u_op.mux_adh := s_ZERO;
+            u_op.abh_en := '1';
 
-  --             u_op.alu_op := AD;
-  --             u_op.mux_ai := s_ZERO;
-  --             u_op.ai_en := '1';
+            u_op.alu_op := AD;
+            u_op.mux_ai := s_ZERO;
+            u_op.ai_en := '1';
 
-  --             u_op.mux_db := s_DATA;
-  --             u_op.mux_bi := s_DB;
-  --             u_op.bi_en := '1';
-  --           WHEN OTHERS =>
-  --         END CASE;
-  --       WHEN T5 =>
-  --         CASE (decInstruction.addressing_mode) IS
-  --           WHEN ABSOLUTE_X | ABSOLUTE_Y =>
-  --             store_in_reg(u_op, decInstruction);
+            u_op.mux_db := s_DATA;
+            u_op.mux_bi := s_DB;
+            u_op.bi_en := '1';
+          WHEN OTHERS =>
+            u_op := initial_op;
+        END CASE;
+      WHEN T5 =>
+        CASE (decInstruction.addressing_mode) IS
+          WHEN ABSOLUTE_X | ABSOLUTE_Y =>
+            store_in_reg(u_op, decInstruction);
 
-  --             u_op.mux_status := s_DATA;
-  --             u_op.status_en(ZERO) := '1';
-  --             u_op.status_en(NEGATIVE) := '1';
-  --           WHEN INDEXED_INDIRECT =>
-  --             ------- Addressing ------- 
-  --             u_op.mux_addr := s_AB;
-  --             -------------------------- 
-  --             u_op.alu_op := AD;
-  --             u_op.mux_adl := s_ALU;
-  --             u_op.abl_en := '1';
-  --             u_op.mux_adh := s_DATA;
-  --             u_op.abh_en := '1';
+            u_op.mux_status := s_DATA;
+            u_op.status_en(ZERO) := '1';
+            u_op.status_en(NEGATIVE) := '1';
+          WHEN INDEXED_INDIRECT =>
+            ------- Addressing ------- 
+            u_op.mux_addr := s_AB;
+            -------------------------- 
+            u_op.alu_op := AD;
+            u_op.mux_adl := s_ALU;
+            u_op.abl_en := '1';
+            u_op.mux_adh := s_DATA;
+            u_op.abh_en := '1';
 
-  --           WHEN INDIRECT_INDEXED =>
-  --             ------- Addressing ------- 
-  --             u_op.mux_addr := s_AB;
-  --             -------------------------- 
+          WHEN INDIRECT_INDEXED =>
+            ------- Addressing ------- 
+            u_op.mux_addr := s_AB;
+            -------------------------- 
 
-  --             u_op.alu_op := ADC;
-  --             u_op.mux_adh := s_ALU;
-  --             u_op.abh_en := '1';
+            u_op.alu_op := ADC;
+            u_op.mux_adh := s_ALU;
+            u_op.abh_en := '1';
 
-  --           WHEN OTHERS =>
+          WHEN OTHERS =>
+            u_op := initial_op;
 
-  --         END CASE;
+        END CASE;
 
-  --       WHEN T6 =>
-  --         store_in_reg(u_op, decInstruction);
+      WHEN T6 =>
+        store_in_reg(u_op, decInstruction);
 
-  --         u_op.mux_status := s_DATA;
-  --         u_op.status_en(ZERO) := '1';
-  --         u_op.status_en(NEGATIVE) := '1';
+        u_op.mux_status := s_DATA;
+        u_op.status_en(ZERO) := '1';
+        u_op.status_en(NEGATIVE) := '1';
 
-  --       WHEN OTHERS =>
-  --     END CASE;
-  --   END IF;
+      WHEN OTHERS =>
+        u_op := initial_op;
+    END CASE;
 
-  --   ld_u_op <= u_op;
-  -- END PROCESS;
+    ld_u_op <= u_op;
+  END PROCESS;
 
   ST_instr : PROCESS (ALL)
     VARIABLE u_op : MICRO_OPERATION;

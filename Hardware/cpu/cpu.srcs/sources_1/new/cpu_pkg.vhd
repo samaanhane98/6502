@@ -48,7 +48,7 @@ PACKAGE cpu_pkg IS
 
   -- Instruction types
   TYPE ADDRESSING_MODE IS (IMPL, IMM, ZERO_PAGE, ZERO_PAGE_X, ZERO_PAGE_Y, ABSOLUTE, ABSOLUTE_X, ABSOLUTE_Y, INDEXED_INDIRECT, INDIRECT_INDEXED);
-  TYPE INSTRUCTION_GROUP IS (NONE, SET_REG, STORE_REG, SET_STATUS, CLEAR_STATUS);
+  TYPE INSTRUCTION_GROUP IS (NONE, LOAD_REG, STORE_REG, SET_STATUS, CLEAR_STATUS);
   TYPE INSTRUCTION_TYPE IS (
     NOP, ADC, LDA, LDX, LDY, SC, CLC, CLV, JMP, STA
   );
@@ -72,7 +72,7 @@ PACKAGE cpu_pkg IS
   TYPE ALU_OPERATION IS (ADC, AD, AD_INC);
 
   TYPE mux_db_t IS (s_DATA, s_ACC, s_PCL, s_PCH, s_SB);
-  TYPE mux_sb_t IS (s_RGX, s_RGY, s_ACC, s_ALU, s_ADH, s_DB);
+  TYPE mux_sb_t IS (s_RGX, s_RGY, s_ACC, s_ALU, s_ADH, s_DATA);
   TYPE mux_dout_t IS (s_DB);
 
   TYPE mux_pc_t IS (s_INCR, s_JMP);
@@ -187,7 +187,7 @@ PACKAGE BODY cpu_pkg IS
 
   PROCEDURE store_in_reg(VARIABLE u_op : INOUT MICRO_OPERATION; SIGNAL instr : IN DECODED_INSTRUCTION) IS
   BEGIN
-    u_op.mux_SB := s_DB;
+    u_op.mux_SB := s_DATA;
     u_op.mux_acc := s_SB;
 
     u_op.acc_en := '1' WHEN instr.instruction_type = LDA ELSE
@@ -248,109 +248,109 @@ PACKAGE BODY cpu_pkg IS
 
       WHEN x"A9" =>
         o_instr.instruction_type := LDA;
-        o_instr.instruction_group := SET_REG;
+        o_instr.instruction_group := LOAD_REG;
         o_instr.addressing_mode := IMM;
         o_instr.instruction_length := 2;
 
       WHEN x"A5" =>
         o_instr.instruction_type := LDA;
-        o_instr.instruction_group := SET_REG;
+        o_instr.instruction_group := LOAD_REG;
         o_instr.addressing_mode := ZERO_PAGE;
         o_instr.instruction_length := 2;
 
       WHEN x"B5" =>
         o_instr.instruction_type := LDA;
-        o_instr.instruction_group := SET_REG;
+        o_instr.instruction_group := LOAD_REG;
         o_instr.addressing_mode := ZERO_PAGE_X;
         o_instr.instruction_length := 2;
 
       WHEN x"AD" =>
         o_instr.instruction_type := LDA;
-        o_instr.instruction_group := SET_REG;
+        o_instr.instruction_group := LOAD_REG;
         o_instr.addressing_mode := ABSOLUTE;
         o_instr.instruction_length := 3;
 
       WHEN x"BD" =>
         o_instr.instruction_type := LDA;
-        o_instr.instruction_group := SET_REG;
+        o_instr.instruction_group := LOAD_REG;
         o_instr.addressing_mode := ABSOLUTE_X;
         o_instr.instruction_length := 3;
 
       WHEN x"B9" =>
         o_instr.instruction_type := LDA;
-        o_instr.instruction_group := SET_REG;
+        o_instr.instruction_group := LOAD_REG;
         o_instr.addressing_mode := ABSOLUTE_Y;
         o_instr.instruction_length := 3;
 
       WHEN x"A1" =>
         o_instr.instruction_type := LDA;
-        o_instr.instruction_group := SET_REG;
+        o_instr.instruction_group := LOAD_REG;
         o_instr.addressing_mode := INDEXED_INDIRECT;
         o_instr.instruction_length := 2;
 
       WHEN x"B1" =>
         o_instr.instruction_type := LDA;
-        o_instr.instruction_group := SET_REG;
+        o_instr.instruction_group := LOAD_REG;
         o_instr.addressing_mode := INDIRECT_INDEXED;
         o_instr.instruction_length := 2;
 
       WHEN x"A2" =>
         o_instr.instruction_type := LDX;
-        o_instr.instruction_group := SET_REG;
+        o_instr.instruction_group := LOAD_REG;
         o_instr.addressing_mode := IMM;
         o_instr.instruction_length := 2;
 
       WHEN x"A6" =>
         o_instr.instruction_type := LDX;
-        o_instr.instruction_group := SET_REG;
+        o_instr.instruction_group := LOAD_REG;
         o_instr.addressing_mode := ZERO_PAGE;
         o_instr.instruction_length := 2;
 
       WHEN x"B6" =>
         o_instr.instruction_type := LDX;
-        o_instr.instruction_group := SET_REG;
+        o_instr.instruction_group := LOAD_REG;
         o_instr.addressing_mode := ZERO_PAGE_Y;
         o_instr.instruction_length := 2;
 
       WHEN x"AE" =>
         o_instr.instruction_type := LDX;
-        o_instr.instruction_group := SET_REG;
+        o_instr.instruction_group := LOAD_REG;
         o_instr.addressing_mode := ABSOLUTE;
         o_instr.instruction_length := 3;
 
       WHEN x"BE" =>
         o_instr.instruction_type := LDX;
-        o_instr.instruction_group := SET_REG;
+        o_instr.instruction_group := LOAD_REG;
         o_instr.addressing_mode := ABSOLUTE_Y;
         o_instr.instruction_length := 3;
 
       WHEN x"A0" =>
         o_instr.instruction_type := LDY;
-        o_instr.instruction_group := SET_REG;
+        o_instr.instruction_group := LOAD_REG;
         o_instr.addressing_mode := IMM;
         o_instr.instruction_length := 2;
 
       WHEN x"A4" =>
         o_instr.instruction_type := LDY;
-        o_instr.instruction_group := SET_REG;
+        o_instr.instruction_group := LOAD_REG;
         o_instr.addressing_mode := ZERO_PAGE;
         o_instr.instruction_length := 2;
 
       WHEN x"B4" =>
         o_instr.instruction_type := LDY;
-        o_instr.instruction_group := SET_REG;
+        o_instr.instruction_group := LOAD_REG;
         o_instr.addressing_mode := ZERO_PAGE_X;
         o_instr.instruction_length := 2;
 
       WHEN x"AC" =>
         o_instr.instruction_type := LDY;
-        o_instr.instruction_group := SET_REG;
+        o_instr.instruction_group := LOAD_REG;
         o_instr.addressing_mode := ABSOLUTE;
         o_instr.instruction_length := 3;
 
       WHEN x"BC" =>
         o_instr.instruction_type := LDY;
-        o_instr.instruction_group := SET_REG;
+        o_instr.instruction_group := LOAD_REG;
         o_instr.addressing_mode := ABSOLUTE_X;
         o_instr.instruction_length := 3;
 

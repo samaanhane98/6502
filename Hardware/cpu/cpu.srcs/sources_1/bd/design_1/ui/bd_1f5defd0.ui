@@ -10,8 +10,8 @@ preplace port port-id_reset_rtl -pg 1 -lvl 0 -x 0 -y 80 -defaultsOSRD
 preplace portBus debug_acc_0 -pg 1 -lvl 6 -x 1300 -y 340 -defaultsOSRD
 preplace inst c_counter_binary_0 -pg 1 -lvl 1 -x 120 -y 160 -defaultsOSRD
 preplace inst xlslice_0 -pg 1 -lvl 2 -x 330 -y 160 -defaultsOSRD
-preplace inst ram_0 -pg 1 -lvl 4 -x 820 -y 100 -defaultsOSRD
 preplace inst top_0 -pg 1 -lvl 5 -x 1110 -y 310 -defaultsOSRD
+preplace inst ram_0 -pg 1 -lvl 4 -x 820 -y 100 -defaultsOSRD
 preplace netloc c_counter_binary_0_Q 1 1 1 NJ 160
 preplace netloc clk_in_1 1 0 1 20 110n
 preplace netloc clock_buffer_0_clk_out1 1 2 3 N 160 650 290 NJ

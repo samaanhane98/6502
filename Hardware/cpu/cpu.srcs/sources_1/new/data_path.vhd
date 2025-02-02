@@ -75,26 +75,13 @@ BEGIN
   SB WHEN u_operation.mux_db = s_SB ELSE
   (OTHERS => '0');
 
-  -- Necessary because it was inferred as a latch
-  PROCESS (u_operation, alu_res, RGX_q, RGY_q, ACC_q, ADH, DB)
-  BEGIN
-    CASE u_operation.mux_sb IS
-      WHEN s_ALU => SB <= alu_res;
-      WHEN s_RGX => SB <= RGX_q;
-      WHEN s_RGY => SB <= RGY_q;
-      WHEN s_ACC => SB <= ACC_q;
-      WHEN s_ADH => SB <= ADH;
-        -- WHEN s_DB => SB <= DB;
-      WHEN OTHERS => SB <= (OTHERS => '0'); -- Ensures full assignment
-    END CASE;
-  END PROCESS;
-  -- MUX_SB : SB <= alu_res WHEN u_operation.mux_sb = s_ALU ELSE
-  -- RGX_q WHEN u_operation.mux_sb = s_RGX ELSE
-  -- RGY_q WHEN u_operation.mux_sb = s_RGY ELSE
-  -- ACC_q WHEN u_operation.mux_sb = s_ACC ELSE
-  -- ADH WHEN u_operation.mux_sb = s_ADH ELSE
-  -- DB WHEN u_operation.mux_sb = s_DB ELSE
-  -- (OTHERS => '0');
+  MUX_SB : SB <= alu_res WHEN u_operation.mux_sb = s_ALU ELSE
+  RGX_q WHEN u_operation.mux_sb = s_RGX ELSE
+  RGY_q WHEN u_operation.mux_sb = s_RGY ELSE
+  ACC_q WHEN u_operation.mux_sb = s_ACC ELSE
+  ADH WHEN u_operation.mux_sb = s_ADH ELSE
+  data_in WHEN u_operation.mux_sb = s_DATA ELSE
+  (OTHERS => '0');
 
   ADL_MUX : ADL <= PCL_q WHEN u_operation.mux_adl = s_PC ELSE
   alu_res WHEN u_operation.mux_adl = s_ALU ELSE
